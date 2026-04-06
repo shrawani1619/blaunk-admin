@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-slate-900;
+}
+
+#root {
+  @apply min-h-screen;
+}
+@page {
+  margin: 12mm;
+}
+
+/* Payslip: print or “Save as PDF” from the browser — only #payslip-print-area is visible */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #payslip-print-area,
+  #payslip-print-area * {
+    visibility: visible;
+  }
+
+  #payslip-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0.5rem 1rem 1rem;
+  }
+
+  #payslip-print-area .bg-primary,
+  #payslip-print-area tr.bg-primary,
+  #payslip-print-area thead tr.bg-primary {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #payslip-print-area .bg-slate-50,
+  #payslip-print-area .bg-slate-100 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
