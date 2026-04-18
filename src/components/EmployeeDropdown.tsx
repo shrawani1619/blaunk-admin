@@ -1,5 +1,4 @@
 import React from 'react';
-import { API_BASE } from '../config';
 
 type EmployeeCodeType = 'employee' | '3pc';
 
@@ -16,19 +15,18 @@ interface EmployeeOption {
   name: string;
 }
 
-const EMPLOYEE_CODES_CACHE: Record<string, { data: EmployeeOption[]; ts: number }> = {};
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const STATIC_EMPLOYEE: EmployeeOption[] = [
+  { id: 'e1', code: 'EMP001', name: 'Sample Employee' },
+  { id: 'e2', code: 'EMP002', name: 'Another Employee' },
+];
 
-function getCachedEmployeeCodes(type: EmployeeCodeType): EmployeeOption[] | null {
-  const key = type === '3pc' ? '3pc' : 'employee';
-  const entry = EMPLOYEE_CODES_CACHE[key];
-  if (!entry || Date.now() - entry.ts > CACHE_TTL_MS) return null;
-  return entry.data;
-}
+const STATIC_3PC: EmployeeOption[] = [
+  { id: 't1', code: '3PC001', name: 'Sample 3PC' },
+  { id: 't2', code: '3PC002', name: 'Another 3PC' },
+];
 
-function setCachedEmployeeCodes(type: EmployeeCodeType, data: EmployeeOption[]) {
-  const key = type === '3pc' ? '3pc' : 'employee';
-  EMPLOYEE_CODES_CACHE[key] = { data, ts: Date.now() };
+function optionsForType(type: EmployeeCodeType): EmployeeOption[] {
+  return type === '3pc' ? STATIC_3PC : STATIC_EMPLOYEE;
 }
 
 export const EmployeeDropdown: React.FC<EmployeeDropdownProps> = ({
@@ -37,49 +35,7 @@ export const EmployeeDropdown: React.FC<EmployeeDropdownProps> = ({
   onChange,
   type,
 }) => {
-  const [options, setOptions] = React.useState<EmployeeOption[]>(() =>
-    getCachedEmployeeCodes(type) ?? [],
-  );
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const cached = getCachedEmployeeCodes(type);
-    if (cached) {
-      setOptions(cached);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    const url = `${API_BASE}/api/employees/codes?type=${type === '3pc' ? '3pc' : 'employee'}`;
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load employee codes.');
-        return res.json();
-      })
-      .then((data) => {
-        const list = data.employees ?? [];
-        if (!cancelled) {
-          setCachedEmployeeCodes(type, list);
-          setOptions(list);
-        }
-      })
-      .catch((cause) => {
-        if (!cancelled) {
-          setError(cause instanceof Error ? cause.message : 'Failed to load employee codes.');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [type]);
+  const options = React.useMemo(() => optionsForType(type), [type]);
 
   return (
     <div className="min-w-0 w-full flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -101,22 +57,14 @@ export const EmployeeDropdown: React.FC<EmployeeDropdownProps> = ({
           }}
           aria-label="Select employee code"
         >
-          <option value="">
-            {loading ? 'Loading...' : 'Select Emp Code'}
-          </option>
+          <option value="">Select Emp Code</option>
           {options.map((employee) => (
             <option key={employee.id} value={employee.code}>
               {employee.code} - {employee.name}
             </option>
           ))}
         </select>
-        {error ? (
-          <p className="mt-1 text-xs text-red-600">
-            {error}
-          </p>
-        ) : null}
       </div>
     </div>
   );
 };
-

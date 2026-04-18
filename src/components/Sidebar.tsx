@@ -14,7 +14,7 @@ const MENU_ITEMS = [
   'Retail Shop',
   'DSA',
   'Verifier',
-  'C & D MANAGEMENT',
+  'RETAIL MANAGEMENT',
 ] as const;
 
 export type MenuItem = (typeof MENU_ITEMS)[number];
@@ -59,12 +59,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
       <aside
         className={[
-          'fixed left-0 top-0 z-20 flex h-full w-60 flex-col overflow-y-auto border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 ease-out',
+          'fixed left-0 top-0 z-20 flex h-full w-60 flex-col overflow-y-auto border-r border-slate-200 bg-[#eceff3] shadow-xl transition-transform duration-200 ease-out',
           'sm:inset-y-16 sm:h-[calc(100vh-4rem)] sm:shadow-lg',
           open ? 'translate-x-0' : '-translate-x-full sm:translate-x-0',
         ].join(' ')}
       >
-        <nav className="flex flex-1 flex-col gap-1 px-4 py-6 sm:px-3 sm:py-4">
+        <nav className="module-uppercase flex flex-1 flex-col gap-1.5 px-3 py-5 sm:py-4">
           {items.map((item) => {
             const isActive = item === activeMenu;
             return (
@@ -73,9 +73,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 type="button"
                 onClick={() => handleItemClick(item)}
                 className={[
-                  'flex w-full items-center rounded-full px-4 py-3 text-left text-sm font-medium transition sm:py-2',
-                  'hover:bg-primary/10 hover:text-primary',
-                  isActive ? 'bg-primary text-white shadow-sm' : 'text-slate-700',
+                  'flex w-full items-center rounded-sm border px-3 py-2.5 text-left text-sm font-semibold leading-snug transition sm:py-2 sm:text-[15px]',
+                  isActive
+                    ? 'border-primary bg-primary text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white text-slate-700 shadow-sm hover:border-primary/40 hover:bg-white',
                 ].join(' ')}
               >
                 {item}

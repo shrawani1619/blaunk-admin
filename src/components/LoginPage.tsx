@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
-import { API_BASE } from '../config';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = React.useState('admin');
@@ -20,35 +19,15 @@ export const LoginPage: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password, captcha }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message || 'Login failed. Please try again.');
+      if (!password.trim()) {
+        throw new Error('Please enter a password.');
       }
-
-      const data = await response.json();
-      // Persist token; you can later move this into a dedicated auth store/context.
-      if (data.token) {
-        window.localStorage.setItem('authToken', data.token);
-      }
-
+      window.localStorage.setItem('authToken', 'local-session');
+      window.localStorage.setItem('loginUsername', username.trim() || 'user');
       navigate('/', { replace: true });
     } catch (cause) {
-      const isNetworkError =
-        cause instanceof TypeError &&
-        (cause.message === 'Failed to fetch' || cause.message.includes('fetch'));
-      const message = isNetworkError
-        ? 'Cannot reach server. Make sure the backend is running (e.g. npm run dev in the backend folder).'
-        : cause instanceof Error
-          ? cause.message
-          : 'Unexpected error during login.';
+      const message =
+        cause instanceof Error ? cause.message : 'Unexpected error during login.';
       setError(message);
     } finally {
       setSubmitting(false);
@@ -98,7 +77,7 @@ export const LoginPage: React.FC = () => {
 
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-slate-700">
-            Captcha <span className="text-slate-400">(optional for admin)</span>
+            Captcha <span className="text-slate-400">(optional)</span>
           </label>
           <div className="flex items-stretch rounded-lg border border-slate-300 bg-white text-sm shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
             <input
@@ -143,4 +122,3 @@ export const LoginPage: React.FC = () => {
     </AuthLayout>
   );
 };
-

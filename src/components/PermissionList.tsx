@@ -15,7 +15,7 @@ export const PERMISSIONS = [
   'Retail Shop',
   'DSA',
   'Verifier',
-  'C & D MANAGEMENT',
+  'RETAIL MANAGEMENT',
 ];
 
 interface PermissionListProps {

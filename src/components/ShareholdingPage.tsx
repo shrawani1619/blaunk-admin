@@ -1,16 +1,15 @@
 import React from 'react';
-import { API_BASE } from '../config';
-
-function getAuthHeaders(includeJson = true): HeadersInit {
-  const token = window.localStorage.getItem('authToken');
-  const headers: HeadersInit = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (includeJson) headers['Content-Type'] = 'application/json';
-  return headers;
-}
+import {
+  AADHAAR_DIGITS_MAX,
+  digitsOnlyMax,
+  MOBILE_DIGITS_MAX,
+  sanitizePan,
+} from '../utils/inputFormats';
 
 const FIELD_CLASSES =
-  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30';
+  'w-full rounded-md border border-slate-300 pl-3 pr-10 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30';
+const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+const MOBILE_REGEX = /^[0-9]{10}$/;
 
 type ShareholdingForm = {
   pan: string;
@@ -96,54 +95,6 @@ const emptyNominee: NomineeForm = {
 
 const FINANCIAL_YEARS = Array.from({ length: 2100 - 2024 + 1 }, (_, i) => 2024 + i);
 
-const CS_MIS_MONTHS = [
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-  'January',
-  'February',
-  'March',
-] as const;
-
-type HrCredentialSlice = {
-  pan?: string;
-  employeeName?: string;
-  mobile?: string;
-  email?: string;
-  aadhaar?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  gender?: string;
-  bankName?: string;
-  ifscCode?: string;
-  bankAccountNumber?: string;
-  exitDate?: string;
-};
-
-function credentialToShareholdingBase(c: HrCredentialSlice): Partial<ShareholdingForm> {
-  return {
-    name: c.employeeName || '',
-    mobile: c.mobile || '',
-    email: c.email || '',
-    aadhaar: c.aadhaar || '',
-    address: c.address || '',
-    city: c.city || '',
-    country: c.country || '',
-    gender: c.gender || '',
-    bankName: c.bankName || '',
-    ifscCode: c.ifscCode || '',
-    bankAccountNumber: c.bankAccountNumber || '',
-    exitDate: c.exitDate || '',
-  };
-}
-
 export const ShareholdingPage: React.FC = () => {
   const [searchPan, setSearchPan] = React.useState('');
   const [activeInnerTab, setActiveInnerTab] = React.useState<'shareholding' | 'mis'>('shareholding');
@@ -157,15 +108,15 @@ export const ShareholdingPage: React.FC = () => {
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [loadingRecord, setLoadingRecord] = React.useState(false);
-  const [csMisFinancialYear, setCsMisFinancialYear] = React.useState('');
-  const [csMisMonth, setCsMisMonth] = React.useState<string>('April');
+  const [csMisFromDate, setCsMisFromDate] = React.useState('');
+  const [csMisToDate, setCsMisToDate] = React.useState('');
   const [csMisDepartment, setCsMisDepartment] = React.useState('');
-  const [csMisReportType] = React.useState('MIS-Shareholding');
-  const [csMisPeriod] = React.useState('Monthly');
-  const [csMisStatus, setCsMisStatus] = React.useState('');
-  const [csMisFormat, setCsMisFormat] = React.useState('Excel');
   const [misExporting, setMisExporting] = React.useState(false);
   const [misMessage, setMisMessage] = React.useState<string | null>(null);
+
+  const csMisReportType =
+    csMisDepartment === 'LEGAL' ? 'Agreement' : csMisDepartment === 'CS' ? 'MIS-Shareholding' : '';
+  const csMisFormat = csMisDepartment === 'LEGAL' ? 'PDF' : csMisDepartment === 'CS' ? 'Excel' : '';
 
   const updateField = (key: keyof ShareholdingForm, value: string) => {
     setForm((previous) => ({
@@ -195,75 +146,19 @@ export const ShareholdingPage: React.FC = () => {
       setStatusMessage('Please enter a PAN to search.');
       return;
     }
+    if (!PAN_REGEX.test(pan)) {
+      setStatusMessage('Invalid PAN format. Use 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F).');
+      return;
+    }
 
     try {
       setLoadingRecord(true);
-      const response = await fetch(`${API_BASE}/api/shareholding/${encodeURIComponent(pan)}`, {
-        headers: getAuthHeaders(false),
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          setForm({ ...emptyShareholding, pan: pan.toUpperCase() });
-          setNominees([{ ...emptyNominee }, { ...emptyNominee }, { ...emptyNominee }]);
-          setStatusMessage(
-            'No shareholding or HR credential found for this PAN. Enter details after Edit, then save.',
-          );
-          setIsEditing(false);
-          return;
-        }
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message || 'Failed to load shareholding record.');
-      }
-
-      const data = await response.json();
-      const record = data.record as
-        | (Partial<ShareholdingForm & { nominees?: NomineeForm[] }> & Record<string, unknown>)
-        | null
-        | undefined;
-      const credential = data.credential as HrCredentialSlice | null | undefined;
-
-      const fromCred = credential ? credentialToShareholdingBase(credential) : {};
-      let fromSh: Partial<ShareholdingForm> & { pan?: string } = { pan: pan.toUpperCase() };
-      if (record) {
-        const { nominees: _omitNominees, ...recordFields } = record as ShareholdingForm & {
-          nominees?: NomineeForm[];
-        };
-        fromSh = {
-          ...recordFields,
-          pan: String(record.pan ?? pan).toUpperCase(),
-          holdingPercent:
-            record.holdingPercent?.toString?.() ?? String(record.holdingPercent ?? '') ?? '',
-          faceValue: record.faceValue?.toString?.() ?? String(record.faceValue ?? '') ?? '',
-          numberOfShares:
-            record.numberOfShares?.toString?.() ?? String(record.numberOfShares ?? '') ?? '',
-        };
-      }
-
-      setForm({
-        ...emptyShareholding,
-        ...fromCred,
-        ...fromSh,
-        pan: String(fromSh.pan || credential?.pan || pan).toUpperCase(),
-      });
-
-      const incomingNominees = (record?.nominees ?? []) as NomineeForm[];
-      const filledNominees = [
-        incomingNominees[0] ?? { ...emptyNominee },
-        incomingNominees[1] ?? { ...emptyNominee },
-        incomingNominees[2] ?? { ...emptyNominee },
-      ];
-      setNominees(filledNominees);
+      setForm({ ...emptyShareholding, pan: pan.toUpperCase() });
+      setNominees([{ ...emptyNominee }, { ...emptyNominee }, { ...emptyNominee }]);
       setIsEditing(false);
-      if (record && credential) {
-        setStatusMessage('Loaded shareholding and HR credential (same PAN). Click Edit to modify.');
-      } else if (record) {
-        setStatusMessage('Shareholding loaded. Click Edit to modify.');
-      } else {
-        setStatusMessage(
-          'HR credential loaded; no shareholding record yet. Click Edit, add share details, then Save.',
-        );
-      }
+      setStatusMessage(
+        'No server: start with an empty form for this PAN. Click Edit, enter details, then Save (local only).',
+      );
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : 'Unexpected error while loading shareholding record.';
@@ -275,74 +170,48 @@ export const ShareholdingPage: React.FC = () => {
 
   const handleSave = async () => {
     setStatusMessage(null);
-    if (!form.pan.trim()) {
+    const normalizedPan = form.pan.trim().toUpperCase();
+    if (!normalizedPan) {
       setStatusMessage('PAN Card No. is required before saving.');
       return;
+    }
+    if (!PAN_REGEX.test(normalizedPan)) {
+      setStatusMessage('Invalid PAN format. Use 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F).');
+      return;
+    }
+    if (form.mobile && !MOBILE_REGEX.test(form.mobile.trim())) {
+      setStatusMessage('Mobile number must be exactly 10 digits.');
+      return;
+    }
+
+    for (let i = 0; i < nominees.length; i += 1) {
+      const nominee = nominees[i];
+      const hasAnyNomineeValue =
+        Boolean(nominee.name?.trim()) ||
+        Boolean(nominee.mobile?.trim()) ||
+        Boolean(nominee.relation?.trim()) ||
+        Boolean(nominee.pan?.trim()) ||
+        Boolean(nominee.percentage?.trim());
+
+      if (!hasAnyNomineeValue) continue;
+
+      if (nominee.mobile?.trim() && !MOBILE_REGEX.test(nominee.mobile.trim())) {
+        setStatusMessage(`Nominee ${i + 1} mobile number must be exactly 10 digits.`);
+        return;
+      }
+      if (nominee.pan?.trim() && !PAN_REGEX.test(nominee.pan.trim().toUpperCase())) {
+        setStatusMessage(
+          `Nominee ${i + 1} PAN format is invalid. Use 5 letters, 4 digits, 1 letter.`,
+        );
+        return;
+      }
     }
 
     setSaving(true);
     try {
-      const cleanedNominees = nominees
-        .map((nominee) => ({
-          ...nominee,
-          percentage: nominee.percentage ? Number(nominee.percentage) : undefined,
-        }))
-        .filter(
-          (nominee) =>
-            nominee.name ||
-            nominee.mobile ||
-            nominee.relation ||
-            nominee.pan ||
-            (nominee.percentage ?? 0) > 0,
-        );
-
-      const payload = {
-        pan: form.pan.trim(),
-        name: form.name,
-        mobile: form.mobile,
-        email: form.email,
-        aadhaar: form.aadhaar,
-        address: form.address,
-        city: form.city,
-        landmark: form.landmark,
-        country: form.country,
-        gender: form.gender,
-        holdingPercent: form.holdingPercent ? Number(form.holdingPercent) : undefined,
-        shareType: form.shareType,
-        faceValue: form.faceValue ? Number(form.faceValue) : undefined,
-        numberOfShares: form.numberOfShares ? Number(form.numberOfShares) : undefined,
-        mode: form.mode,
-        isinCode: form.isinCode,
-        dpNumber: form.dpNumber,
-        folioNumber: form.folioNumber,
-        distinctiveFrom: form.distinctiveFrom,
-        distinctiveTo: form.distinctiveTo,
-        yearOfIssuance: form.yearOfIssuance,
-        stakeholder: form.stakeholder,
-        dateOfAllotment: form.dateOfAllotment,
-        remarks: form.remarks,
-        exitDate: form.exitDate,
-        year: form.year,
-        bankName: form.bankName,
-        ifscCode: form.ifscCode,
-        bankAccountNumber: form.bankAccountNumber,
-        pledge: form.pledge,
-        nominees: cleanedNominees,
-      };
-
-      const response = await fetch(`${API_BASE}/api/shareholding`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message || 'Failed to save shareholding record.');
-      }
-
+      setForm((prev) => ({ ...prev, pan: normalizedPan }));
       setIsEditing(false);
-      setStatusMessage('Shareholding record saved successfully.');
+      setStatusMessage('Shareholding saved locally (no server).');
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : 'Unexpected error while saving shareholding record.';
@@ -355,53 +224,31 @@ export const ShareholdingPage: React.FC = () => {
   const handleMisExport = async (event: React.FormEvent) => {
     event.preventDefault();
     setMisMessage(null);
-    if (!csMisFinancialYear) {
-      setMisMessage('Select financial year.');
+    if (!csMisFromDate || !csMisToDate) {
+      setMisMessage('Select from date and to date.');
+      return;
+    }
+    if (!csMisDepartment) {
+      setMisMessage('Select department.');
       return;
     }
     setMisExporting(true);
     try {
-      const response = await fetch(`${API_BASE}/api/shareholding/mis-export`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          financialYear: csMisFinancialYear,
-          month: csMisMonth,
-          ...(csMisDepartment ? { department: csMisDepartment } : {}),
-          ...(csMisStatus ? { status: csMisStatus } : {}),
-          format: csMisFormat,
-          reportType: csMisReportType,
-          period: csMisPeriod,
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json().catch(() => null);
-        throw new Error(err?.message || 'MIS export failed.');
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'company-sec-mis-shareholding.xlsx';
-      a.click();
-      URL.revokeObjectURL(url);
-      setMisMessage('Report downloaded.');
-    } catch (cause) {
-      setMisMessage(cause instanceof Error ? cause.message : 'MIS export failed.');
+      setMisMessage('MIS export requires a server (not connected in this build).');
     } finally {
       setMisExporting(false);
     }
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       {/* Inner tabs */}
-      <div className="flex gap-1 rounded-full bg-slate-200/70 p-1 w-fit">
+      <div className="flex gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
         <button
           type="button"
           onClick={() => setActiveInnerTab('shareholding')}
           className={[
-            'rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm transition',
+            'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
             activeInnerTab === 'shareholding'
               ? 'bg-primary text-white'
               : 'bg-transparent text-slate-700 hover:bg-white',
@@ -413,7 +260,7 @@ export const ShareholdingPage: React.FC = () => {
           type="button"
           onClick={() => setActiveInnerTab('mis')}
           className={[
-            'rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm transition',
+            'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
             activeInnerTab === 'mis'
               ? 'bg-primary text-white'
               : 'bg-transparent text-slate-700 hover:bg-white',
@@ -422,27 +269,6 @@ export const ShareholdingPage: React.FC = () => {
           MIS
         </button>
       </div>
-
-      {/* Search */}
-      <form
-        onSubmit={handleSearch}
-        className="flex w-full max-w-xl items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 shadow-card"
-      >
-        <input
-          type="text"
-          value={searchPan}
-          onChange={(event) => setSearchPan(event.target.value)}
-          placeholder="Search by PAN"
-          className="flex-1 border-0 bg-transparent text-sm text-slate-900 outline-none"
-        />
-        <button
-          type="submit"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white shadow-sm transition hover:bg-primary-dark"
-          aria-label="Search"
-        >
-          🔍
-        </button>
-      </form>
 
       {/* Header with actions */}
       <div className="flex items-center justify-between">
@@ -506,7 +332,9 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Enter Mobile No."
               value={form.mobile}
-              onChange={(event) => updateField('mobile', event.target.value)}
+              onChange={(event) =>
+                updateField('mobile', digitsOnlyMax(event.target.value, MOBILE_DIGITS_MAX))
+              }
             />
           </div>
           <div>
@@ -528,7 +356,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="PAN"
               value={form.pan}
-              onChange={(event) => updateField('pan', event.target.value.toUpperCase())}
+              onChange={(event) => updateField('pan', sanitizePan(event.target.value))}
             />
           </div>
 
@@ -541,7 +369,9 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Aadhaar"
               value={form.aadhaar}
-              onChange={(event) => updateField('aadhaar', event.target.value)}
+              onChange={(event) =>
+                updateField('aadhaar', digitsOnlyMax(event.target.value, AADHAAR_DIGITS_MAX))
+              }
             />
           </div>
           <div>
@@ -626,8 +456,11 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('shareType', event.target.value)}
             >
               <option value="">Select Share Type</option>
-              <option value="equity">Equity</option>
-              <option value="preference">Preference</option>
+              <option value="fully-paid-eq">Fully Paid - EQ</option>
+              <option value="partially-paid-eq">Partially Paid - EQ</option>
+              <option value="convertible">Convertible</option>
+              <option value="debenture">Debenture</option>
+              <option value="preference-share">Preference Share</option>
             </select>
           </div>
 
@@ -640,7 +473,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Face Value"
               value={form.faceValue}
-              onChange={(event) => updateField('faceValue', event.target.value)}
+              onChange={(event) => updateField('faceValue', event.target.value.replace(/\D/g, ''))}
             />
           </div>
           <div>
@@ -651,7 +484,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="No. of Shares"
               value={form.numberOfShares}
-              onChange={(event) => updateField('numberOfShares', event.target.value)}
+              onChange={(event) => updateField('numberOfShares', digitsOnlyMax(event.target.value, 7))}
             />
           </div>
           <div>
@@ -664,8 +497,8 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('mode', event.target.value)}
             >
               <option value="">Select Mode</option>
-              <option value="demat">Demat</option>
               <option value="physical">Physical</option>
+              <option value="demat">Demat</option>
             </select>
           </div>
           <div>
@@ -676,7 +509,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="ISIN Code"
               value={form.isinCode}
-              onChange={(event) => updateField('isinCode', event.target.value)}
+              onChange={(event) => updateField('isinCode', digitsOnlyMax(event.target.value, 12))}
             />
           </div>
 
@@ -689,7 +522,8 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Enter DP Number"
               value={form.dpNumber}
-              onChange={(event) => updateField('dpNumber', event.target.value)}
+              maxLength={16}
+              onChange={(event) => updateField('dpNumber', event.target.value.replace(/[^A-Za-z0-9]/g, ''))}
             />
           </div>
           <div>
@@ -700,7 +534,8 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Enter Folio Number"
               value={form.folioNumber}
-              onChange={(event) => updateField('folioNumber', event.target.value)}
+              maxLength={12}
+              onChange={(event) => updateField('folioNumber', event.target.value.replace(/[^A-Za-z0-9]/g, ''))}
             />
           </div>
           <div>
@@ -711,7 +546,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Distinctive No(s) From"
               value={form.distinctiveFrom}
-              onChange={(event) => updateField('distinctiveFrom', event.target.value)}
+              onChange={(event) => updateField('distinctiveFrom', digitsOnlyMax(event.target.value, 12))}
             />
           </div>
           <div>
@@ -722,7 +557,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Distinctive No(s) To"
               value={form.distinctiveTo}
-              onChange={(event) => updateField('distinctiveTo', event.target.value)}
+              onChange={(event) => updateField('distinctiveTo', digitsOnlyMax(event.target.value, 12))}
             />
           </div>
 
@@ -737,9 +572,8 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('yearOfIssuance', event.target.value)}
             >
               <option value="">Select Year</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
+              <option value="2026-2027">2026 - 2027</option>
+              <option value="2027-2028">2027 - 2028</option>
             </select>
           </div>
           <div>
@@ -752,8 +586,11 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('stakeholder', event.target.value)}
             >
               <option value="">Select Stakeholder</option>
-              <option value="promoter">Promoter</option>
-              <option value="public">Public</option>
+              <option value="board-member">Board Member</option>
+              <option value="hni">HNI</option>
+              <option value="pledge-lender">Pledge Lender</option>
+              <option value="investors">Investors</option>
+              <option value="shareholders">Shareholders</option>
             </select>
           </div>
           <div>
@@ -761,8 +598,8 @@ export const ShareholdingPage: React.FC = () => {
               Date of Allotment
             </label>
             <input
-              className={FIELD_CLASSES}
-              placeholder="mm/dd/yyyy"
+              type="date"
+              className={`${FIELD_CLASSES} [color-scheme:light]`}
               value={form.dateOfAllotment}
               onChange={(event) => updateField('dateOfAllotment', event.target.value)}
             />
@@ -777,8 +614,11 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('remarks', event.target.value)}
             >
               <option value="">Select Remarks</option>
-              <option value="na">NA</option>
-              <option value="pledged">Pledged</option>
+              <option value="transferable">Transferable</option>
+              <option value="non-transferable">Non-Transferable</option>
+              <option value="partly-paid">Partly Paid</option>
+              <option value="partly-sold">Partly Sold</option>
+              <option value="lockin-period">Lockin Period</option>
             </select>
           </div>
 
@@ -788,8 +628,8 @@ export const ShareholdingPage: React.FC = () => {
               Exit Date
             </label>
             <input
-              className={FIELD_CLASSES}
-              placeholder="mm/dd/yyyy"
+              type="date"
+              className={`${FIELD_CLASSES} [color-scheme:light]`}
               value={form.exitDate}
               onChange={(event) => updateField('exitDate', event.target.value)}
             />
@@ -804,9 +644,8 @@ export const ShareholdingPage: React.FC = () => {
               onChange={(event) => updateField('year', event.target.value)}
             >
               <option value="">Select Year</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
+              <option value="2026-2027">2026 - 2027</option>
+              <option value="2027-2028">2027 - 2028</option>
             </select>
           </div>
           <div>
@@ -817,7 +656,7 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="Enter Bank Name"
               value={form.bankName}
-              onChange={(event) => updateField('bankName', event.target.value)}
+              onChange={(event) => updateField('bankName', event.target.value.replace(/[^A-Za-z\s]/g, ''))}
             />
           </div>
           <div>
@@ -828,7 +667,8 @@ export const ShareholdingPage: React.FC = () => {
               className={FIELD_CLASSES}
               placeholder="IFSC Code"
               value={form.ifscCode}
-              onChange={(event) => updateField('ifscCode', event.target.value)}
+              maxLength={11}
+              onChange={(event) => updateField('ifscCode', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
             />
           </div>
           <div>
@@ -846,12 +686,15 @@ export const ShareholdingPage: React.FC = () => {
             <label className="mb-1 block text-xs font-semibold text-slate-700">
               Pledge
             </label>
-            <input
+            <select
               className={FIELD_CLASSES}
-              placeholder="NA"
               value={form.pledge}
               onChange={(event) => updateField('pledge', event.target.value)}
-            />
+            >
+              <option value="NA">NA</option>
+              <option value="Un Pledge">Un Pledge</option>
+              <option value="Pledge">Pledge</option>
+            </select>
           </div>
         </div>
 
@@ -886,7 +729,11 @@ export const ShareholdingPage: React.FC = () => {
                   placeholder="Mobile No."
                   value={nominees[index - 1]?.mobile ?? ''}
                   onChange={(event) =>
-                    updateNomineeField(index - 1, 'mobile', event.target.value)
+                    updateNomineeField(
+                      index - 1,
+                      'mobile',
+                      digitsOnlyMax(event.target.value, MOBILE_DIGITS_MAX),
+                    )
                   }
                 />
               </div>
@@ -925,7 +772,7 @@ export const ShareholdingPage: React.FC = () => {
                   placeholder="PAN"
                   value={nominees[index - 1]?.pan ?? ''}
                   onChange={(event) =>
-                    updateNomineeField(index - 1, 'pan', event.target.value.toUpperCase())
+                    updateNomineeField(index - 1, 'pan', sanitizePan(event.target.value))
                   }
                 />
               </div>
@@ -935,12 +782,7 @@ export const ShareholdingPage: React.FC = () => {
         </fieldset>
       </section>
       ) : (
-        <section className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6">
-          <h2 className="mb-2 text-2xl font-semibold text-primary">MIS</h2>
-          <p className="mb-4 max-w-3xl text-sm text-slate-600">
-            Exports shareholding records updated in the selected FY month, joined with HR employee credentials on
-            the same PAN (department / status filters use the credential master).
-          </p>
+        <section className="w-full overflow-x-auto">
           {misMessage ? (
             <p className="mb-4 text-sm text-slate-700" role="status">
               {misMessage}
@@ -952,15 +794,14 @@ export const ShareholdingPage: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns:
-                'minmax(5rem, 1fr) minmax(5rem, 1fr) minmax(6rem, 1fr) minmax(7rem, 1.2fr) minmax(5rem, 1fr) minmax(5rem, 1fr) minmax(6rem, 1fr) auto',
+                'minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(5rem, 1fr) minmax(7rem, 1.2fr) minmax(6rem, 1fr) auto',
             }}
           >
-            <div className="px-3 py-2.5 sm:px-4">Financial Year</div>
-            <div className="px-3 py-2.5 sm:px-4">Month</div>
+            <div className="px-3 py-2.5 sm:px-4">From Date</div>
+            <div className="px-3 py-2.5 sm:px-4">To Date</div>
             <div className="px-3 py-2.5 sm:px-4">Department</div>
+            <div className="px-3 py-2.5 sm:px-4">Code</div>
             <div className="px-3 py-2.5 sm:px-4">Report Type</div>
-            <div className="px-3 py-2.5 sm:px-4">Period</div>
-            <div className="px-3 py-2.5 sm:px-4">Status</div>
             <div className="px-3 py-2.5 sm:px-4">Output Format</div>
             <div className="px-3 py-2.5 text-right sm:px-4">Actions</div>
           </div>
@@ -970,48 +811,37 @@ export const ShareholdingPage: React.FC = () => {
             className="grid gap-3 border border-t-0 border-slate-200 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4"
             style={{
               gridTemplateColumns:
-                'minmax(5rem, 1fr) minmax(5rem, 1fr) minmax(6rem, 1fr) minmax(7rem, 1.2fr) minmax(5rem, 1fr) minmax(5rem, 1fr) minmax(6rem, 1fr) auto',
+                'minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(5rem, 1fr) minmax(7rem, 1.2fr) minmax(6rem, 1fr) auto',
             }}
           >
-            <select
-              value={csMisFinancialYear}
-              onChange={(event) => setCsMisFinancialYear(event.target.value)}
+            <input
+              type="date"
+              value={csMisFromDate}
+              onChange={(event) => setCsMisFromDate(event.target.value)}
               className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="">Select year</option>
-              {FINANCIAL_YEARS.map((y) => (
-                <option key={y} value={String(y)}>
-                  {y}
-                </option>
-              ))}
-            </select>
+            />
 
-            <select
-              value={csMisMonth}
-              onChange={(event) => setCsMisMonth(event.target.value)}
+            <input
+              type="date"
+              value={csMisToDate}
+              onChange={(event) => setCsMisToDate(event.target.value)}
               className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-            >
-              {CS_MIS_MONTHS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+            />
 
             <select
               value={csMisDepartment}
               onChange={(event) => setCsMisDepartment(event.target.value)}
               className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             >
-              <option value="">All departments</option>
-              <option value="Payroll">Payroll</option>
-              <option value="HR - Credential">HR - Credential</option>
-              <option value="3P - Credential">3P - Credential</option>
-              <option value="Deduction">Deduction</option>
-              <option value="Company Secretary">Company Secretary</option>
-              <option value="Management">Management</option>
-              <option value="Finance">Finance</option>
+              <option value="CS">CS</option>
+              <option value="LEGAL">LEGAL</option>
             </select>
+
+            <input
+              readOnly
+              value="All"
+              className="min-w-0 w-full cursor-default rounded-md border border-slate-300 bg-slate-50 px-2 py-1.5 text-sm text-slate-900 shadow-sm"
+            />
 
             <input
               readOnly
@@ -1021,29 +851,9 @@ export const ShareholdingPage: React.FC = () => {
 
             <input
               readOnly
-              value={csMisPeriod}
+              value={csMisFormat}
               className="min-w-0 w-full cursor-default rounded-md border border-slate-300 bg-slate-50 px-2 py-1.5 text-sm text-slate-900 shadow-sm"
             />
-
-            <select
-              value={csMisStatus}
-              onChange={(event) => setCsMisStatus(event.target.value)}
-              className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="">All statuses</option>
-              <option value="Active">Active</option>
-              <option value="Exit">Exit</option>
-              <option value="On Hold">On Hold</option>
-            </select>
-
-            <select
-              value={csMisFormat}
-              onChange={(event) => setCsMisFormat(event.target.value)}
-              className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="Excel">Excel</option>
-              <option value="PDF">PDF</option>
-            </select>
 
             <div className="flex min-w-0 justify-end">
               <button

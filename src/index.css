@@ -4,6 +4,41 @@
 
 body {
   @apply bg-background text-slate-900;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.module-uppercase,
+.module-uppercase * {
+  text-transform: uppercase !important;
+}
+
+.sponsor-options-case,
+.sponsor-options-case option {
+  text-transform: none !important;
+}
+
+.force-lowercase {
+  text-transform: lowercase !important;
+}
+
+input,
+select,
+textarea,
+button,
+label,
+th,
+td {
+  font-weight: 600;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
+  cursor: not-allowed !important;
 }
 
 #root {

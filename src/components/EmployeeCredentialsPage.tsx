@@ -1,13 +1,12 @@
 import React from 'react';
-import { API_BASE } from '../config';
-
-function getAuthHeaders(includeJson = true): HeadersInit {
-  const token = window.localStorage.getItem('authToken');
-  const headers: HeadersInit = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (includeJson) headers['Content-Type'] = 'application/json';
-  return headers;
-}
+import {
+  AADHAAR_DIGITS_MAX,
+  digitsOnlyMax,
+  MOBILE_DIGITS_MAX,
+  sanitizePan,
+  sanitizeTan,
+  ZIP_DIGITS_MAX,
+} from '../utils/inputFormats';
 
 const FIELD_CLASSES =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30';
@@ -239,6 +238,11 @@ export const EmployeeCredentialsPage: React.FC = () => {
   const [uploadMonthSalaryMonth, setUploadMonthSalaryMonth] = React.useState('January');
   const [uploadMonthSalaryStatus, setUploadMonthSalaryStatus] = React.useState('New');
   const [uploadMonthSalaryFileName, setUploadMonthSalaryFileName] = React.useState<string | null>(null);
+  const [uploadInvestDeclarationDay, setUploadInvestDeclarationDay] = React.useState('25/001');
+  const [uploadInvestDeclarationYear, setUploadInvestDeclarationYear] = React.useState('2025');
+  const [uploadInvestDeclarationMonth, setUploadInvestDeclarationMonth] = React.useState('January');
+  const [uploadInvestDeclarationStatus, setUploadInvestDeclarationStatus] = React.useState('New');
+  const [uploadInvestDeclarationFileName, setUploadInvestDeclarationFileName] = React.useState<string | null>(null);
   /** Which upload row is being edited (label matches row); null = view mode */
   const [uploadEditingLabel, setUploadEditingLabel] = React.useState<string | null>(null);
   const [uploadSectionMessage, setUploadSectionMessage] = React.useState<string | null>(null);
@@ -255,10 +259,35 @@ export const EmployeeCredentialsPage: React.FC = () => {
   const [statusMessageThirdParty, setStatusMessageThirdParty] = React.useState<string | null>(null);
 
   const updateField = (key: keyof CredentialsForm, value: string) => {
-    setForm((previous) => ({
-      ...previous,
-      [key]: value,
-    }));
+    let finalValue = value;
+    const salaryFields = [
+      'basicSalary', 'hra', 'lta', 'medicalAllowance', 'cea', 'foodAllowance',
+      'supplementaryAllowance', 'mea', 'pTax', 'healthInsurance', 'esiSalary',
+      'pfContribution', 'npsEmployer', 'roundOff', 'ctcMonthly', 'ctcPerDay',
+      'npsEmployee', 'gratuity'
+    ];
+    if (salaryFields.includes(key as string)) {
+      finalValue = value.replace(/[^0-9]/g, '');
+    }
+
+    setForm((previous) => {
+      const next = { ...previous, [key]: finalValue };
+
+      const ctcFields = [
+        'basicSalary', 'hra', 'lta', 'medicalAllowance', 'cea', 'foodAllowance',
+        'supplementaryAllowance', 'mea', 'pTax', 'healthInsurance',
+        'esiSalary', 'pfContribution', 'npsEmployer', 'roundOff'
+      ];
+      if (ctcFields.includes(key as string)) {
+        const ctc = ctcFields.reduce((sum, f) => {
+          const val = parseFloat(next[f as keyof CredentialsForm] as string) || 0;
+          return sum + val;
+        }, 0);
+        next.ctcMonthly = ctc.toString();
+      }
+
+      return next;
+    });
   };
 
   const updateReferenceField = (index: number, key: keyof ReferenceForm, value: string) => {
@@ -302,42 +331,14 @@ export const EmployeeCredentialsPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE}/api/employee-credentials/${encodeURIComponent(searchPan)}`,
-        { headers: getAuthHeaders(false) },
-      );
-      if (response.status === 404) {
-        setForm({ ...emptyCredentials, pan: searchPan.toUpperCase() });
-        setReferences([
-          { name: '', mobile: '', designation: '', city: '' },
-          { name: '', mobile: '', designation: '', city: '' },
-        ]);
-        setEmployeeDocumentName(null);
-        setEmployeeDocumentUrl(null);
-        setStatusMessage('No record found. You can enter new details and save.');
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to load employee credentials.');
-      }
-
-      const { record } = await response.json();
-      setForm({
-        ...emptyCredentials,
-        ...record,
-      });
-      setReferences(
-        Array.isArray(record.references) && record.references.length
-          ? record.references
-          : [
-              { name: '', mobile: '', designation: '', city: '' },
-              { name: '', mobile: '', designation: '', city: '' },
-            ],
-      );
-      setEmployeeDocumentUrl(record.employeeDocumentUrl || null);
-      setEmployeeDocumentName(record.employeeDocumentUrl ? 'Uploaded document' : null);
-      setStatusMessage('Employee credentials loaded.');
+      setForm({ ...emptyCredentials, pan: searchPan.toUpperCase() });
+      setReferences([
+        { name: '', mobile: '', designation: '', city: '' },
+        { name: '', mobile: '', designation: '', city: '' },
+      ]);
+      setEmployeeDocumentName(null);
+      setEmployeeDocumentUrl(null);
+      setStatusMessage('No server: blank form for this PAN. Enter details and save (local only).');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to load employee credentials', error);
@@ -352,29 +353,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/employee-credentials`, {
-        method: 'POST',
-        headers: getAuthHeaders(true),
-        body: JSON.stringify({
-          ...form,
-          references,
-          employeeDocumentUrl,
-        }),
-      });
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const msg = data?.message || 'Failed to save employee credentials.';
-        throw new Error(msg);
-      }
-
-      const { record } = data;
-      setForm({
-        ...emptyCredentials,
-        ...record,
-      });
       setIsEditing(false);
-      setStatusMessage('Employee credentials saved successfully.');
+      setStatusMessage('Employee credentials saved locally (no server).');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to save employee credentials', error);
@@ -385,7 +365,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
       {/* Inner tabs */}
-      <div className="flex flex-wrap gap-1 rounded-full bg-slate-200/70 p-1 w-fit">
+      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
         {[
           { id: 'credentials', label: 'Credentials' },
           { id: 'vacancy', label: 'Vacancy' },
@@ -398,7 +378,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
             type="button"
             onClick={() => setActiveTab(tab.id as typeof activeTab)}
             className={[
-              'rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm transition',
+              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
               activeTab === tab.id ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
             ].join(' ')}
           >
@@ -417,7 +397,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
             <input
               type="text"
               value={searchPan}
-              onChange={(event) => setSearchPan(event.target.value)}
+              onChange={(event) => setSearchPan(sanitizePan(event.target.value))}
               placeholder="Search by PAN"
               className="flex-1 border-0 bg-transparent text-sm text-slate-900 outline-none"
             />
@@ -481,7 +461,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Mobile No."
                     value={form.mobile}
-                    onChange={(event) => updateField('mobile', event.target.value)}
+                    onChange={(event) =>
+                      updateField('mobile', digitsOnlyMax(event.target.value, MOBILE_DIGITS_MAX))
+                    }
                   />
                 </div>
                 <div>
@@ -499,7 +481,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="PAN Card No."
                     value={form.pan}
-                    onChange={(event) => updateField('pan', event.target.value.toUpperCase())}
+                    onChange={(event) => updateField('pan', sanitizePan(event.target.value))}
                   />
                 </div>
 
@@ -510,7 +492,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Aadhaar No."
                     value={form.aadhaar}
-                    onChange={(event) => updateField('aadhaar', event.target.value)}
+                    onChange={(event) =>
+                      updateField('aadhaar', digitsOnlyMax(event.target.value, AADHAAR_DIGITS_MAX))
+                    }
                   />
                 </div>
                 <div>
@@ -548,7 +532,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="ZIP/PIN Code"
                     value={form.zip}
-                    onChange={(event) => updateField('zip', event.target.value)}
+                    onChange={(event) =>
+                      updateField('zip', digitsOnlyMax(event.target.value, ZIP_DIGITS_MAX))
+                    }
                   />
                 </div>
                 <div>
@@ -580,6 +566,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                   <select
                     className={FIELD_CLASSES}
                     value={form.state}
+                    disabled
                     onChange={(event) => updateField('state', event.target.value)}
                   >
                     <option value="">Select State</option>
@@ -622,7 +609,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     <option value="Sales">Sales</option>
                     <option value="Retail Store">Retail Store</option>
                     <option value="Company Secretary">Company Secretary</option>
-                    <option value="C & D MANAGEMENT">C & D MANAGEMENT</option>
+                    <option value="RETAIL MANAGEMENT">RETAIL MANAGEMENT</option>
                     <option value="Verifier">Verifier</option>
                   </select>
                 </div>
@@ -668,7 +655,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Employee Code"
                     value={form.empCode}
-                    onChange={(event) => updateField('empCode', event.target.value)}
+                    maxLength={10}
+                    onChange={(event) => updateField('empCode', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
                   />
                 </div>
                 <div>
@@ -677,7 +665,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Bank Name"
                     value={form.bankName}
-                    onChange={(event) => updateField('bankName', event.target.value)}
+                    onChange={(event) => updateField('bankName', event.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                   />
                 </div>
 
@@ -688,7 +676,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter IFSC Code"
                     value={form.ifscCode}
-                    onChange={(event) => updateField('ifscCode', event.target.value)}
+                    maxLength={11}
+                    onChange={(event) => updateField('ifscCode', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11))}
                   />
                 </div>
                 <div>
@@ -697,7 +686,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Bank Account No."
                     value={form.bankAccountNumber}
-                    onChange={(event) => updateField('bankAccountNumber', event.target.value)}
+                    maxLength={18}
+                    onChange={(event) => updateField('bankAccountNumber', event.target.value.replace(/[^0-9]/g, '').slice(0, 18))}
                   />
                 </div>
                 <div>
@@ -728,7 +718,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Centre Name"
                     value={form.centreName}
-                    onChange={(event) => updateField('centreName', event.target.value)}
+                    onChange={(event) => updateField('centreName', event.target.value.toUpperCase().replace(/[^A-Z0-9\s]/g, ''))}
                   />
                 </div>
                 <div>
@@ -784,7 +774,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter number"
                     value={form.nps}
-                    onChange={(event) => updateField('nps', event.target.value)}
+                    maxLength={12}
+                    onChange={(event) => updateField('nps', event.target.value.replace(/[^0-9]/g, '').slice(0, 12))}
                   />
                 </div>
                 <div>
@@ -802,7 +793,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter PF"
                     value={form.pf}
-                    onChange={(event) => updateField('pf', event.target.value)}
+                    maxLength={15}
+                    onChange={(event) => updateField('pf', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15))}
                   />
                 </div>
 
@@ -813,7 +805,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter ESI"
                     value={form.esi}
-                    onChange={(event) => updateField('esi', event.target.value)}
+                    maxLength={15}
+                    onChange={(event) => updateField('esi', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15))}
                   />
                 </div>
                 <div>
@@ -870,6 +863,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     type="date"
                     className={FIELD_CLASSES}
                     value={form.exitDate}
+                    disabled
                     onChange={(event) => updateField('exitDate', event.target.value)}
                   />
                 </div>
@@ -906,7 +900,11 @@ export const EmployeeCredentialsPage: React.FC = () => {
                         placeholder="Mobile"
                         value={references[index]?.mobile ?? ''}
                         onChange={(event) =>
-                          updateReferenceField(index, 'mobile', event.target.value)
+                          updateReferenceField(
+                            index,
+                            'mobile',
+                            digitsOnlyMax(event.target.value, MOBILE_DIGITS_MAX),
+                          )
                         }
                       />
                     </div>
@@ -1094,6 +1092,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                       className={FIELD_CLASSES}
                       placeholder="CTC - Monthly"
                       value={form.ctcMonthly}
+                      readOnly
                       onChange={(event) => updateField('ctcMonthly', event.target.value)}
                     />
                   </div>
@@ -1191,26 +1190,21 @@ export const EmployeeCredentialsPage: React.FC = () => {
 
                       setEmployeeDocumentName(file.name);
 
-                      const formData = new FormData();
-                      formData.append('document', file);
-
                       try {
-                        const response = await fetch(`${API_BASE}/api/upload/employee-document`, {
-                          method: 'POST',
-                          body: formData,
-                        });
-
-                        if (!response.ok) {
-                          throw new Error('Upload failed');
-                        }
-
-                        const data = await response.json();
-                        setEmployeeDocumentUrl(data.url);
-                        setStatusMessage('Employee document uploaded successfully.');
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const url = typeof reader.result === 'string' ? reader.result : '';
+                          setEmployeeDocumentUrl(url);
+                          setStatusMessage('Document stored in browser for this session (no upload server).');
+                        };
+                        reader.onerror = () => {
+                          setStatusMessage('Failed to read document file.');
+                        };
+                        reader.readAsDataURL(file);
                       } catch (error) {
                         // eslint-disable-next-line no-console
-                        console.error('Document upload failed', error);
-                        setStatusMessage('Failed to upload employee document.');
+                        console.error('Document read failed', error);
+                        setStatusMessage('Failed to process employee document.');
                       }
                     }}
                   />
@@ -1261,7 +1255,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
               <option value="Retail Shop">Retail Shop</option>
               <option value="DSA">DSA</option>
               <option value="Verifier">Verifier</option>
-              <option value="C & D MANAGEMENT">C & D MANAGEMENT</option>
+              <option value="RETAIL MANAGEMENT">RETAIL MANAGEMENT</option>
             </select>
           </div>
 
@@ -1417,9 +1411,6 @@ export const EmployeeCredentialsPage: React.FC = () => {
       ) : activeTab === 'upload' ? (
         <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6">
           <h2 className="mb-4 text-2xl font-semibold text-primary">Upload</h2>
-          <p className="mb-4 text-sm text-slate-600">
-            Investment declaration upload is planned for a later phase (not available here yet).
-          </p>
 
           {uploadSectionMessage ? (
             <p className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
@@ -1442,83 +1433,27 @@ export const EmployeeCredentialsPage: React.FC = () => {
                 fileName: uploadMonthSalaryFileName,
                 setFileName: setUploadMonthSalaryFileName,
               },
+              {
+                label: 'Invst Declaration',
+                status: uploadInvestDeclarationStatus,
+                setStatus: setUploadInvestDeclarationStatus,
+                day: uploadInvestDeclarationDay,
+                setDay: setUploadInvestDeclarationDay,
+                year: uploadInvestDeclarationYear,
+                setYear: setUploadInvestDeclarationYear,
+                month: uploadInvestDeclarationMonth,
+                setMonth: setUploadInvestDeclarationMonth,
+                fileName: uploadInvestDeclarationFileName,
+                setFileName: setUploadInvestDeclarationFileName,
+              },
             ].map((row) => {
               const rowEditing = uploadEditingLabel === row.label;
               const anotherRowEditing = uploadEditingLabel !== null && !rowEditing;
               const fieldLocked = !rowEditing;
 
               return (
-                <div
-                  key={row.label}
-                  className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[160px,120px,120px,120px,140px,auto]"
-                >
-                  <div>
-                    <div
-                      className={`w-full rounded-md border px-3 py-1.5 text-left text-sm font-semibold shadow-sm ${
-                        fieldLocked ? 'cursor-default border-slate-200 bg-slate-100 text-slate-700' : 'border-slate-300 bg-slate-50 text-slate-800'
-                      }`}
-                    >
-                      {row.label}
-                    </div>
-                  </div>
-
-                  <select
-                    className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
-                    value={row.status}
-                    disabled={fieldLocked}
-                    onChange={(event) => row.setStatus(event.target.value)}
-                  >
-                    <option value="New">New</option>
-                    <option value="Modify">Modify</option>
-                  </select>
-
-                  <input
-                    className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
-                    value={row.day}
-                    disabled={fieldLocked}
-                    onChange={(event) => row.setDay(event.target.value)}
-                  />
-
-                  <select
-                    className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
-                    value={row.year}
-                    disabled={fieldLocked}
-                    onChange={(event) => row.setYear(event.target.value)}
-                  >
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                  </select>
-
-                  <select
-                    className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
-                    value={row.month}
-                    disabled={fieldLocked}
-                    onChange={(event) => row.setMonth(event.target.value)}
-                  >
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                  </select>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      type="file"
-                      disabled={fieldLocked}
-                      className="block min-w-0 flex-1 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        row.setFileName(file ? file.name : null);
-                      }}
-                    />
+                <div key={row.label} className="rounded-md">
+                  <div className="mb-2 flex justify-end">
                     {rowEditing ? (
                       <button
                         type="button"
@@ -1545,9 +1480,78 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     )}
                   </div>
 
-                  {row.fileName ? (
-                    <div className="text-xs text-slate-600 sm:col-span-6">{row.fileName}</div>
-                  ) : null}
+                  <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[160px,120px,120px,120px,140px,1fr,90px]">
+                    <div
+                      className={`w-full rounded-md border px-3 py-1.5 text-left text-sm font-semibold shadow-sm ${
+                        fieldLocked ? 'cursor-default border-slate-200 bg-slate-100 text-slate-700' : 'border-slate-300 bg-slate-50 text-slate-800'
+                      }`}
+                    >
+                      {row.label}
+                    </div>
+
+                    <select
+                      className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
+                      value={row.status}
+                      disabled={fieldLocked}
+                      onChange={(event) => row.setStatus(event.target.value)}
+                    >
+                      <option value="New">New</option>
+                      <option value="Modify">Modify</option>
+                    </select>
+
+                    <input
+                      className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
+                      value={row.day}
+                      disabled={fieldLocked}
+                      onChange={(event) => row.setDay(event.target.value)}
+                    />
+
+                    <select
+                      className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
+                      value={row.year}
+                      disabled={fieldLocked}
+                      onChange={(event) => row.setYear(event.target.value)}
+                    >
+                      <option value="2025">2025</option>
+                      <option value="2024">2024</option>
+                    </select>
+
+                    <select
+                      className={`${FIELD_CLASSES} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-600`}
+                      value={row.month}
+                      disabled={fieldLocked}
+                      onChange={(event) => row.setMonth(event.target.value)}
+                    >
+                      <option value="January">January</option>
+                      <option value="February">February</option>
+                      <option value="March">March</option>
+                      <option value="April">April</option>
+                      <option value="May">May</option>
+                      <option value="June">June</option>
+                      <option value="July">July</option>
+                      <option value="August">August</option>
+                      <option value="September">September</option>
+                      <option value="October">October</option>
+                      <option value="November">November</option>
+                      <option value="December">December</option>
+                    </select>
+
+                    <input
+                      type="file"
+                      disabled={fieldLocked}
+                      className="block min-w-0 w-full text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-800 hover:file:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        row.setFileName(file ? file.name : null);
+                      }}
+                    />
+
+                    <input
+                      readOnly
+                      value={row.fileName ?? 'N...n'}
+                      className="min-w-0 w-full cursor-default rounded-md border border-slate-300 bg-slate-50 px-2 py-2 text-sm text-slate-700 shadow-sm"
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -1643,7 +1647,12 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Aadhaar No."
                     value={thirdPartyForm.aadharNo}
-                    onChange={(event) => updateThirdPartyField('aadharNo', event.target.value)}
+                    onChange={(event) =>
+                      updateThirdPartyField(
+                        'aadharNo',
+                        digitsOnlyMax(event.target.value, AADHAAR_DIGITS_MAX),
+                      )
+                    }
                   />
                 </div>
                 <div>
@@ -1661,7 +1670,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="PAN Card No."
                     value={thirdPartyForm.panNo}
-                    onChange={(event) => updateThirdPartyField('panNo', event.target.value.toUpperCase())}
+                    onChange={(event) =>
+                      updateThirdPartyField('panNo', sanitizePan(event.target.value))
+                    }
                   />
                 </div>
                 <div>
@@ -1670,7 +1681,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="TAN No."
                     value={thirdPartyForm.tanNo}
-                    onChange={(event) => updateThirdPartyField('tanNo', event.target.value)}
+                    onChange={(event) =>
+                      updateThirdPartyField('tanNo', sanitizeTan(event.target.value))
+                    }
                   />
                 </div>
 
@@ -1723,7 +1736,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="ZIP/PIN Code"
                     value={thirdPartyForm.zip}
-                    onChange={(event) => updateThirdPartyField('zip', event.target.value)}
+                    onChange={(event) =>
+                      updateThirdPartyField('zip', digitsOnlyMax(event.target.value, ZIP_DIGITS_MAX))
+                    }
                   />
                 </div>
                 <div>
@@ -1755,6 +1770,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                   <select
                     className={FIELD_CLASSES}
                     value={thirdPartyForm.state}
+                    disabled
                     onChange={(event) => updateThirdPartyField('state', event.target.value)}
                   >
                     <option value="">Select State</option>
@@ -1771,7 +1787,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter 3PC - Empl Code"
                     value={thirdPartyForm.threePEmplCode}
-                    onChange={(event) => updateThirdPartyField('threePEmplCode', event.target.value)}
+                    maxLength={10}
+                    onChange={(event) => updateThirdPartyField('threePEmplCode', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
                   />
                 </div>
                 <div>
@@ -1835,7 +1852,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Bank Name"
                     value={thirdPartyForm.bankName}
-                    onChange={(event) => updateThirdPartyField('bankName', event.target.value)}
+                    onChange={(event) => updateThirdPartyField('bankName', event.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                   />
                 </div>
 
@@ -1846,7 +1863,8 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter IFSC Code"
                     value={thirdPartyForm.ifscCode}
-                    onChange={(event) => updateThirdPartyField('ifscCode', event.target.value)}
+                    maxLength={11}
+                    onChange={(event) => updateThirdPartyField('ifscCode', event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11))}
                   />
                 </div>
                 <div>
@@ -1855,8 +1873,9 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     className={FIELD_CLASSES}
                     placeholder="Enter Bank Account No."
                     value={thirdPartyForm.bankAccountNumber}
+                    maxLength={18}
                     onChange={(event) =>
-                      updateThirdPartyField('bankAccountNumber', event.target.value)
+                      updateThirdPartyField('bankAccountNumber', event.target.value.replace(/[^0-9]/g, '').slice(0, 18))
                     }
                   />
                 </div>
@@ -1934,6 +1953,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
                     type="date"
                     className={FIELD_CLASSES}
                     value={thirdPartyForm.exitDate}
+                    disabled
                     onChange={(event) => updateThirdPartyField('exitDate', event.target.value)}
                   />
                 </div>
@@ -2012,7 +2032,11 @@ export const EmployeeCredentialsPage: React.FC = () => {
                       placeholder="Mobile"
                       value={thirdPartyReferences[index]?.mobile ?? ''}
                       onChange={(event) =>
-                        updateThirdPartyReferenceField(index, 'mobile', event.target.value)
+                        updateThirdPartyReferenceField(
+                          index,
+                          'mobile',
+                          digitsOnlyMax(event.target.value, MOBILE_DIGITS_MAX),
+                        )
                       }
                     />
                   </div>

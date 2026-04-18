@@ -1,8 +1,12 @@
 import React from 'react';
-import { API_BASE } from '../config';
 import { EmployeeDropdown } from './EmployeeDropdown';
 import { PermissionList, PERMISSIONS } from './PermissionList';
 import { PlanCharges } from './PlanCharges';
+import { CommissionPage } from './CommissionPage';
+import { PaybankPage } from './PaybankPage';
+import { VoucherPage } from './VoucherPage';
+import { DsaLimitCheckPage } from './DsaLimitCheckPage';
+import { CompanyDetailsPage } from './CompanyDetailsPage';
 import { MisReports } from './MisReports';
 
 const emptyPermissions = (): Record<string, boolean> =>
@@ -28,42 +32,10 @@ export const RightsPage: React.FC = () => {
       setMacEntry('');
       return;
     }
-    let cancelled = false;
-    const load = async () => {
-      setRightsLoading(true);
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/rights/${typeParam}/${encodeURIComponent(selectedEmployee)}`,
-        );
-        if (cancelled) return;
-        if (res.ok) {
-          const data = await res.json();
-          const sections = (data.sections || []) as string[];
-          setMacEntry(typeof data.macAddress === 'string' ? data.macAddress : '');
-          setPermissions(() => {
-            const next = emptyPermissions();
-            PERMISSIONS.forEach((p) => {
-              next[p] = sections.includes(p);
-            });
-            return next;
-          });
-        } else {
-          setPermissions(emptyPermissions());
-          setMacEntry('');
-        }
-      } catch {
-        if (!cancelled) {
-          setPermissions(emptyPermissions());
-          setMacEntry('');
-        }
-      } finally {
-        if (!cancelled) setRightsLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
+    setRightsLoading(true);
+    setPermissions(emptyPermissions());
+    setMacEntry('');
+    setRightsLoading(false);
   }, [selectedEmployee, typeParam]);
 
   const handlePermissionChange = (permission: string, checked: boolean) => {
@@ -76,28 +48,7 @@ export const RightsPage: React.FC = () => {
       setRightsSaveStatus('Select an employee code first.');
       return;
     }
-    setRightsSaveStatus(null);
-    try {
-      const sections = PERMISSIONS.filter((p) => permissions[p]);
-      const res = await fetch(`${API_BASE}/api/rights`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          employeeCode: selectedEmployee,
-          type: typeParam,
-          sections,
-          macAddress: macEntry.trim(),
-        }),
-      });
-      if (res.ok) {
-        setRightsSaveStatus('Rights saved successfully.');
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setRightsSaveStatus(data.message || 'Failed to save rights.');
-      }
-    } catch {
-      setRightsSaveStatus('Failed to save rights.');
-    }
+    setRightsSaveStatus('Rights saved locally (no server).');
   };
 
   const tabs = [
@@ -223,6 +174,46 @@ export const RightsPage: React.FC = () => {
       );
     }
 
+    if (activeTab === 'Commission') {
+      return (
+        <section className="self-start w-full min-w-0 max-w-full rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6 md:max-w-[50%]">
+          <CommissionPage />
+        </section>
+      );
+    }
+
+    if (activeTab === 'Paybank') {
+      return (
+        <section className="w-full rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6">
+          <PaybankPage />
+        </section>
+      );
+    }
+
+    if (activeTab === 'Voucher') {
+      return (
+        <section className="w-full p-0 sm:p-0">
+          <VoucherPage />
+        </section>
+      );
+    }
+
+    if (activeTab === 'DSA Limit Check') {
+      return (
+        <section className="w-full p-0 sm:p-0">
+          <DsaLimitCheckPage />
+        </section>
+      );
+    }
+
+    if (activeTab === 'Company Details') {
+      return (
+        <section className="w-full p-0 sm:p-0">
+          <CompanyDetailsPage />
+        </section>
+      );
+    }
+
     if (activeTab === 'MIS') {
       return (
         <MisReports />
@@ -255,10 +246,10 @@ export const RightsPage: React.FC = () => {
                 type="button"
                 onClick={() => setActiveTab(tab)}
                 className={[
-                  'rounded-lg px-4 py-2 text-xs font-medium transition sm:text-sm',
+                  'rounded-lg border px-4 py-2 text-xs font-medium transition sm:text-sm',
                   isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                    ? 'border-primary bg-primary text-white shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
                 ].join(' ')}
               >
                 {tab}
@@ -266,16 +257,37 @@ export const RightsPage: React.FC = () => {
             );
           })}
         </nav>
-        <button
-          type="button"
-          className="rounded-lg border border-primary bg-white px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-primary/5"
-        >
-          Edit
-        </button>
+        {activeTab !== 'Commission' &&
+        activeTab !== 'Paybank' &&
+        activeTab !== 'Voucher' &&
+        activeTab !== 'DSA Limit Check' &&
+        activeTab !== 'Company Details' ? (
+          <button
+            type="button"
+            className="rounded-lg border border-primary bg-white px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-primary/5"
+          >
+            Edit
+          </button>
+        ) : null}
       </div>
 
       {/* Page title */}
-      <h1 className="text-2xl font-bold text-slate-800">{activeTab}</h1>
+      {activeTab === 'Commission' ||
+      activeTab === 'Voucher' ||
+      activeTab === 'DSA Limit Check' ||
+      activeTab === 'Company Details' ? (
+        <h1 className="sr-only">
+          {activeTab === 'Voucher'
+            ? 'Voucher Management'
+            : activeTab === 'DSA Limit Check'
+              ? 'DSA Limit Check'
+              : activeTab === 'Company Details'
+                ? 'Company Details'
+                : 'Commission'}
+        </h1>
+      ) : (
+        <h1 className="text-2xl font-bold text-slate-800">{activeTab}</h1>
+      )}
 
       {renderContent()}
     </div>

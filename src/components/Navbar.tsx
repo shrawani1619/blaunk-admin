@@ -1,13 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
-
-function getAuthHeaders(): HeadersInit {
-  const token = window.localStorage.getItem('authToken');
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  return headers;
-}
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -18,23 +10,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const [loginLabel, setLoginLabel] = React.useState<string>('');
 
   React.useEffect(() => {
-    let cancelled = false;
-    fetch(`${API_BASE}/api/auth/me`, { headers: getAuthHeaders() })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (cancelled || !data?.user) return;
-        const username = data.user.username;
-        const isAdmin = username && String(username).toLowerCase() === 'admin';
-        setLoginLabel(isAdmin ? 'Admin' : `Login: ${data.user.employeeCode || username || ''}`);
-      })
-      .catch(() => setLoginLabel(''));
-    return () => {
-      cancelled = true;
-    };
+    const name = window.localStorage.getItem('loginUsername')?.trim();
+    setLoginLabel(name ? `Login: ${name}` : 'Session');
   }, []);
 
   const handleLogout = () => {
     window.localStorage.removeItem('authToken');
+    window.localStorage.removeItem('loginUsername');
     navigate('/login', { replace: true });
   };
 
@@ -53,16 +35,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </svg>
           </button>
         ) : null}
-        <span className="text-xl font-extrabold tracking-wide text-white">
+        <span className="select-none text-xl font-extrabold tracking-[0.12em] text-[#e8c547] drop-shadow-sm">
           BLAUNK
         </span>
       </div>
       <div className="flex items-center gap-4 text-sm text-white/90">
-        <span>{loginLabel || 'Login'}</span>
+        <span>{loginLabel}</span>
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-full border border-white/70 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-white transition hover:bg-white/15"
+          className="rounded-md border border-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
         >
           Logout
         </button>
@@ -70,4 +52,3 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     </header>
   );
 };
-

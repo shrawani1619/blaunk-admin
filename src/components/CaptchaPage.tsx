@@ -1,13 +1,4 @@
 import React from 'react';
-import { API_BASE } from '../config';
-
-function getAuthHeaders(includeJson = true): HeadersInit {
-  const token = window.localStorage.getItem('authToken');
-  const headers: Record<string, string> = {};
-  if (includeJson) headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  return headers;
-}
 
 type ConfigItem = { securityCode: string; captcha: string };
 type IpRow = { id: string; serviceProvider: string; ipAddress: string };
@@ -29,7 +20,7 @@ const ALL_SECURITY_CODES = [
   'Retail Shop',
   'DSA',
   'Verifier',
-  'C & D MANAGEMENT',
+  'RETAIL MANAGEMENT',
 ];
 
 function mergeConfigs(apiConfigs: ConfigItem[]): ConfigItem[] {
@@ -177,7 +168,7 @@ function MisReportForm() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="whitespace-nowrap rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="whitespace-nowrap rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             Generate Report
           </button>
@@ -207,48 +198,20 @@ export const CaptchaPage: React.FC = () => {
 
   const loadCaptcha = React.useCallback(() => {
     setMessage(null);
-    return fetch(`${API_BASE}/api/captcha`, { headers: getAuthHeaders(false) })
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        setConfigs(mergeConfigs(Array.isArray(data.configs) ? data.configs : []));
-      })
-      .catch(() => setMessage('Failed to load captcha config.'));
+    setConfigs(mergeConfigs([]));
+    return Promise.resolve();
   }, []);
 
   const loadIp = React.useCallback(() => {
     setIpMessage(null);
-    return fetch(`${API_BASE}/api/ip-address`, { headers: getAuthHeaders(false) })
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        if (Array.isArray(data.list)) {
-          setIpList(
-            data.list.map((r: { id: string; serviceProvider?: string; ipAddress?: string }) => ({
-              id: r.id,
-              serviceProvider: r.serviceProvider ?? '',
-              ipAddress: r.ipAddress ?? '',
-            })),
-          );
-        }
-      })
-      .catch(() => setIpMessage('Failed to load IP address config.'));
+    setIpList([]);
+    return Promise.resolve();
   }, []);
 
   const loadMac = React.useCallback(() => {
     setMacMessage(null);
-    return fetch(`${API_BASE}/api/mac-address`, { headers: getAuthHeaders(false) })
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        if (Array.isArray(data.list)) {
-          setMacList(
-            data.list.map((r: { id: string; serviceProvider?: string; macAddress?: string }) => ({
-              id: r.id,
-              serviceProvider: r.serviceProvider ?? '',
-              macAddress: r.macAddress ?? '',
-            })),
-          );
-        }
-      })
-      .catch(() => setMacMessage('Failed to load MAC address config.'));
+    setMacList([]);
+    return Promise.resolve();
   }, []);
 
   React.useEffect(() => {
@@ -266,17 +229,7 @@ export const CaptchaPage: React.FC = () => {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(`${API_BASE}/api/captcha`, {
-        method: 'POST',
-        headers: getAuthHeaders(true),
-        body: JSON.stringify({ configs }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-      const data = await res.json();
-      setConfigs(mergeConfigs(Array.isArray(data.configs) ? data.configs : []));
-      setMessage('Saved successfully.');
-    } catch {
-      setMessage('Failed to save.');
+      setMessage('Saved locally (no server).');
     } finally {
       setSaving(false);
     }
@@ -296,51 +249,20 @@ export const CaptchaPage: React.FC = () => {
   };
 
   const handleDeleteIpRow = async (id: string) => {
-    if (id.startsWith('new-')) {
-      setIpList((prev) => prev.filter((r) => r.id !== id));
-      return;
-    }
-    try {
-      const res = await fetch(`${API_BASE}/api/ip-address/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(false),
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      await loadIp();
-    } catch {
-      setIpMessage('Failed to delete row.');
-    }
+    setIpList((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleSaveIp = async () => {
     setIpSaving(true);
     setIpMessage(null);
     try {
-      const res = await fetch(`${API_BASE}/api/ip-address/save-all`, {
-        method: 'POST',
-        headers: getAuthHeaders(true),
-        body: JSON.stringify({
-          list: ipList.map((r) => ({
-            id: r.id.startsWith('new-') ? undefined : r.id,
-            serviceProvider: r.serviceProvider,
-            ipAddress: r.ipAddress,
-          })),
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-      const data = await res.json();
-      if (Array.isArray(data.list)) {
-        setIpList(
-          data.list.map((r: { id: string; serviceProvider?: string; ipAddress?: string }) => ({
-            id: r.id,
-            serviceProvider: r.serviceProvider ?? '',
-            ipAddress: r.ipAddress ?? '',
-          })),
-        );
-      }
-      setIpMessage('Saved successfully.');
-    } catch {
-      setIpMessage('Failed to save.');
+      setIpList((prev) =>
+        prev.map((r, i) => ({
+          ...r,
+          id: r.id.startsWith('new-') ? `local-ip-${i}-${Date.now()}` : r.id,
+        })),
+      );
+      setIpMessage('Saved locally (no server).');
     } finally {
       setIpSaving(false);
     }
@@ -360,51 +282,20 @@ export const CaptchaPage: React.FC = () => {
   };
 
   const handleDeleteMacRow = async (id: string) => {
-    if (id.startsWith('new-')) {
-      setMacList((prev) => prev.filter((r) => r.id !== id));
-      return;
-    }
-    try {
-      const res = await fetch(`${API_BASE}/api/mac-address/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(false),
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      await loadMac();
-    } catch {
-      setMacMessage('Failed to delete row.');
-    }
+    setMacList((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleSaveMac = async () => {
     setMacSaving(true);
     setMacMessage(null);
     try {
-      const res = await fetch(`${API_BASE}/api/mac-address/save-all`, {
-        method: 'POST',
-        headers: getAuthHeaders(true),
-        body: JSON.stringify({
-          list: macList.map((r) => ({
-            id: r.id.startsWith('new-') ? undefined : r.id,
-            serviceProvider: r.serviceProvider,
-            macAddress: r.macAddress,
-          })),
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-      const data = await res.json();
-      if (Array.isArray(data.list)) {
-        setMacList(
-          data.list.map((r: { id: string; serviceProvider?: string; macAddress?: string }) => ({
-            id: r.id,
-            serviceProvider: r.serviceProvider ?? '',
-            macAddress: r.macAddress ?? '',
-          })),
-        );
-      }
-      setMacMessage('Saved successfully.');
-    } catch {
-      setMacMessage('Failed to save.');
+      setMacList((prev) =>
+        prev.map((r, i) => ({
+          ...r,
+          id: r.id.startsWith('new-') ? `local-mac-${i}-${Date.now()}` : r.id,
+        })),
+      );
+      setMacMessage('Saved locally (no server).');
     } finally {
       setMacSaving(false);
     }
@@ -425,7 +316,7 @@ export const CaptchaPage: React.FC = () => {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -433,11 +324,10 @@ export const CaptchaPage: React.FC = () => {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-sm font-medium transition ${
-                isActive
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+              className={[
+                'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
+                isActive ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
+              ].join(' ')}
             >
               {tab.label}
             </button>
@@ -499,7 +389,7 @@ export const CaptchaPage: React.FC = () => {
                   type="button"
                   onClick={handleSaveCaptcha}
                   disabled={saving}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
+                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save'}
                 </button>
@@ -576,7 +466,7 @@ export const CaptchaPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddIpRow}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   Add Row
                 </button>
@@ -584,7 +474,7 @@ export const CaptchaPage: React.FC = () => {
                   type="button"
                   onClick={handleSaveIp}
                   disabled={ipSaving}
-                  className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
+                  className="rounded-sm border border-slate-300 bg-white px-8 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {ipSaving ? 'Saving…' : 'Save'}
                 </button>
@@ -661,7 +551,7 @@ export const CaptchaPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddMacRow}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   Add Row
                 </button>
@@ -669,7 +559,7 @@ export const CaptchaPage: React.FC = () => {
                   type="button"
                   onClick={handleSaveMac}
                   disabled={macSaving}
-                  className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
+                  className="rounded-sm border border-slate-300 bg-white px-8 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {macSaving ? 'Saving…' : 'Save'}
                 </button>

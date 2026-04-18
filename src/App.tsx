@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { RightsPage } from './components/RightsPage';
@@ -8,68 +8,21 @@ import { ForgotPasswordPage } from './components/ForgotPasswordPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { ShareholdingPage } from './components/ShareholdingPage';
 import { EmployeeCredentialsPage } from './components/EmployeeCredentialsPage';
-import { PayslipReports } from './components/PayslipReports';
 import { CaptchaPage } from './components/CaptchaPage';
 import { AdminPersonnelPage } from './components/AdminPersonnelPage';
-import { API_BASE } from './config';
-
-const rightsMeInFlight = { value: false };
-
-function useRightsMe() {
-  const navigate = useNavigate();
-  const [allowedSections, setAllowedSections] = React.useState<string[] | null>(null);
-
-  React.useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setAllowedSections(null);
-      return;
-    }
-    if (rightsMeInFlight.value) return;
-    rightsMeInFlight.value = true;
-    let cancelled = false;
-    fetch(`${API_BASE}/api/rights/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (res.status === 401) {
-          localStorage.removeItem('authToken');
-          if (!cancelled) navigate('/login', { replace: true });
-          return { sections: [] };
-        }
-        return res.ok ? res.json() : Promise.reject(res);
-      })
-      .then((data) => {
-        if (!cancelled && Array.isArray(data?.sections)) {
-          setAllowedSections(data.sections);
-        } else if (!cancelled) {
-          setAllowedSections(null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setAllowedSections(null);
-      })
-      .finally(() => {
-        rightsMeInFlight.value = false;
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate]);
-  return allowedSections;
-}
+import { FinancePage } from './components/FinancePage';
+import { MAUploadPage } from './components/MAUploadPage';
+import { SalesPage } from './components/SalesPage';
+import { PayslipDashboardPage } from './components/PayslipDashboardPage';
+import { CustomerCarePage } from './components/CustomerCarePage';
+import { RetailShopPage } from './components/RetailShopPage';
+import { DsaPage } from './components/DsaPage';
+import { VerifierPage } from './components/VerifierPage';
+import { RetailManagementPage } from './components/RetailManagementPage';
 
 const AppShell: React.FC = () => {
   const [activeMenu, setActiveMenu] = React.useState<string>('Management');
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const allowedSections = useRightsMe();
-
-  React.useEffect(() => {
-    if (allowedSections == null || allowedSections.length === 0) return;
-    setActiveMenu((current) =>
-      allowedSections.includes(current) ? current : allowedSections[0],
-    );
-  }, [allowedSections]);
 
   const renderContent = () => {
     if (activeMenu === 'Company Secretary') {
@@ -78,14 +31,38 @@ const AppShell: React.FC = () => {
     if (activeMenu === 'HR') {
       return <EmployeeCredentialsPage />;
     }
-    if (activeMenu === 'Payslip') {
-      return <PayslipReports />;
-    }
     if (activeMenu === 'IT Dept') {
       return <CaptchaPage />;
     }
     if (activeMenu === 'Admin & Personnel') {
       return <AdminPersonnelPage />;
+    }
+    if (activeMenu === 'Finance') {
+      return <FinancePage />;
+    }
+    if (activeMenu === 'M & A') {
+      return <MAUploadPage />;
+    }
+    if (activeMenu === 'Sales') {
+      return <SalesPage />;
+    }
+    if (activeMenu === 'Payslip') {
+      return <PayslipDashboardPage />;
+    }
+    if (activeMenu === 'Customer Care') {
+      return <CustomerCarePage />;
+    }
+    if (activeMenu === 'Retail Shop') {
+      return <RetailShopPage />;
+    }
+    if (activeMenu === 'DSA') {
+      return <DsaPage />;
+    }
+    if (activeMenu === 'Verifier') {
+      return <VerifierPage />;
+    }
+    if (activeMenu === 'RETAIL MANAGEMENT') {
+      return <RetailManagementPage />;
     }
     return <RightsPage />;
   };
@@ -97,7 +74,6 @@ const AppShell: React.FC = () => {
         <Sidebar
           activeMenu={activeMenu}
           onChangeActive={setActiveMenu}
-          allowedSections={allowedSections}
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
@@ -132,4 +108,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
