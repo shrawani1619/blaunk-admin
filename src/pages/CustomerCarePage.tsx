@@ -1,5 +1,9 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { GenerateButton } from '../components/GenerateButton';
 
 const TABS = ['Profile', 'Report an Issue', 'Reviews', 'MIS'] as const;
 
@@ -142,21 +146,11 @@ export const CustomerCarePage: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" aria-label="Customer care tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={[
-              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-              activeTab === tab ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
-            ].join(' ')}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={TABS.map(t => ({ id: t, label: t }))}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id)}
+      />
 
       {activeTab === 'Report an Issue' && (
         <>
@@ -164,40 +158,23 @@ export const CustomerCarePage: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex w-full max-w-md">
-              <input
-                type="text"
+              <Input
+                placeholder="Search by RN No./ Product ID"
                 value={issueSearch}
                 onChange={(e) => setIssueSearch(e.target.value)}
-                placeholder="Search by RN No./ Product ID"
-                className="h-9 flex-1 rounded-l-md border border-primary bg-white px-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-primary/25"
+                className="flex-1"
               />
-              <button
-                type="button"
-                className="inline-flex h-9 w-12 items-center justify-center rounded-r-md bg-primary text-white transition hover:bg-primary-dark"
-                aria-label="Search report issue"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
             </div>
 
-            <button
-              type="button"
-              className="rounded-sm bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-            >
+            <Button variant="success">
               Save
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
               disabled={!rowSelected}
-              className={[
-                'rounded-sm px-8 py-3 text-base font-semibold text-white shadow-sm transition',
-                rowSelected ? 'bg-rose-500 hover:bg-rose-600' : 'cursor-not-allowed bg-rose-300',
-              ].join(' ')}
             >
               Delete
-            </button>
+            </Button>
           </div>
 
           <div className="overflow-x-auto border border-slate-200 bg-white">
@@ -309,40 +286,23 @@ export const CustomerCarePage: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex w-full max-w-md">
-              <input
-                type="text"
+              <Input
+                placeholder="Search by Name/ Mobile No./ Product ID"
                 value={reviewSearch}
                 onChange={(e) => setReviewSearch(e.target.value)}
-                placeholder="Search by Name/ Mobile No./ Product ID"
-                className="h-9 flex-1 rounded-l-md border border-primary bg-white px-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-primary/25"
+                className="flex-1"
               />
-              <button
-                type="button"
-                className="inline-flex h-9 w-12 items-center justify-center rounded-r-md bg-primary text-white transition hover:bg-primary-dark"
-                aria-label="Search reviews"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
             </div>
 
-            <button
-              type="button"
-              className="rounded-sm bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-            >
+            <Button variant="success">
               Save
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
               disabled={!reviewRowSelected}
-              className={[
-                'rounded-sm px-8 py-3 text-base font-semibold text-white shadow-sm transition',
-                reviewRowSelected ? 'bg-rose-500 hover:bg-rose-600' : 'cursor-not-allowed bg-rose-300',
-              ].join(' ')}
             >
               Delete
-            </button>
+            </Button>
           </div>
 
           <div className="overflow-x-auto border border-slate-200 bg-white">
@@ -496,13 +456,7 @@ export const CustomerCarePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex px-1">
-                <button
-                  type="button"
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-                  aria-label="Generate Report"
-                >
-                  Generate Report
-                </button>
+                <GenerateButton onClick={() => {}} />
               </div>
             </div>
           </div>

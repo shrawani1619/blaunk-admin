@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AuthLayout } from './AuthLayout';
+import { AuthLayout } from '../components/AuthLayout';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = React.useState('');

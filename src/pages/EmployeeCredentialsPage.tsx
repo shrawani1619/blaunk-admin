@@ -1,4 +1,8 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { GenerateButton } from '../components/GenerateButton';
 import {
   AADHAAR_DIGITS_MAX,
   digitsOnlyMax,
@@ -365,27 +369,17 @@ export const EmployeeCredentialsPage: React.FC = () => {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
       {/* Inner tabs */}
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
-        {[
+      <Tabs
+        tabs={[
           { id: 'credentials', label: 'Credentials' },
           { id: 'vacancy', label: 'Vacancy' },
           { id: 'mis', label: 'MIS' },
           { id: 'upload', label: 'Upload' },
           { id: 'thirdParty', label: '3P-Credentials' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            className={[
-              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-              activeTab === tab.id ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
-            ].join(' ')}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        ]}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id as typeof activeTab)}
+      />
 
       {activeTab === 'credentials' ? (
         <>
@@ -414,25 +408,22 @@ export const EmployeeCredentialsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-primary">Employee Credentials</h1>
             <div className="flex gap-2">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setIsEditing(true);
                   setStatusMessage(null);
                 }}
-                className="rounded-md border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/10 disabled:opacity-60"
                 disabled={isEditing}
               >
                 Edit
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={!isEditing}
-                className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:bg-primary/60"
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -1399,12 +1390,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
               <option value="PDF">PDF</option>
             </select>
             <div className="flex min-w-0 justify-end">
-              <button
-                type="submit"
-                className="whitespace-nowrap rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              >
-                Generate Report
-              </button>
+              <GenerateButton onClick={() => {}} />
             </div>
           </form>
         </section>

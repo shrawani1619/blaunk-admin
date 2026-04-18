@@ -1,13 +1,16 @@
 import React from 'react';
-import { EmployeeDropdown } from './EmployeeDropdown';
-import { PermissionList, PERMISSIONS } from './PermissionList';
-import { PlanCharges } from './PlanCharges';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { EmployeeDropdown } from '../components/EmployeeDropdown';
+import { PermissionList, PERMISSIONS } from '../components/PermissionList';
+import { PlanCharges } from '../components/PlanCharges';
 import { CommissionPage } from './CommissionPage';
-import { PaybankPage } from './PaybankPage';
+import { PaybankPage } from '../components/PaybankPage';
 import { VoucherPage } from './VoucherPage';
 import { DsaLimitCheckPage } from './DsaLimitCheckPage';
 import { CompanyDetailsPage } from './CompanyDetailsPage';
-import { MisReports } from './MisReports';
+import { MisReports } from '../components/MisReports';
 
 const emptyPermissions = (): Record<string, boolean> =>
   Object.fromEntries(PERMISSIONS.map((p) => [p, false]));
@@ -130,14 +133,12 @@ export const RightsPage: React.FC = () => {
                       autoComplete="off"
                     />
                   </div>
-                  <button
-                    type="button"
+                  <Button
                     onClick={handleSaveRights}
                     disabled={!selectedEmployee || rightsLoading}
-                    className="h-11 shrink-0 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {rightsLoading ? 'Saving…' : 'Save'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -237,26 +238,11 @@ export const RightsPage: React.FC = () => {
     <div className="mx-auto flex max-w-6xl flex-col gap-3">
       {/* Tabs + Edit */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <nav className="flex flex-wrap gap-1" aria-label="Section tabs">
-          {tabs.map((tab) => {
-            const isActive = tab === activeTab;
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={[
-                  'rounded-lg border px-4 py-2 text-xs font-medium transition sm:text-sm',
-                  isActive
-                    ? 'border-primary bg-primary text-white shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
-                ].join(' ')}
-              >
-                {tab}
-              </button>
-            );
-          })}
-        </nav>
+        <Tabs
+          tabs={tabs.map(t => ({ id: t, label: t }))}
+          activeTab={activeTab}
+          onChange={(id) => setActiveTab(id)}
+        />
         {activeTab !== 'Commission' &&
         activeTab !== 'Paybank' &&
         activeTab !== 'Voucher' &&

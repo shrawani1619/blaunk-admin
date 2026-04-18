@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthLayout } from './AuthLayout';
+import { AuthLayout } from '../components/AuthLayout';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = React.useState('admin');

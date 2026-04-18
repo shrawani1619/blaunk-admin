@@ -1,4 +1,7 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
 
 const TABS = ['BGT', 'Sponsor Ads'] as const;
 
@@ -89,34 +92,14 @@ export const MAUploadPage: React.FC = () => {
   return (
     <div className="mx-auto flex max-w-[100rem] flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" role="tablist" aria-label="M and A sections">
-          {TABS.map((tab) => {
-            const isActive = tab === activeTab;
-            return (
-              <button
-                key={tab}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveTab(tab)}
-                className={[
-                  'rounded-sm px-8 py-3 text-base font-semibold transition',
-                  isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'bg-transparent text-slate-800 hover:bg-white',
-                ].join(' ')}
-              >
-                {tab}
-              </button>
-            );
-          })}
-        </div>
-        <button
-          type="button"
-          className="rounded-sm bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-        >
+        <Tabs
+          tabs={TABS.map(t => ({ id: t, label: t }))}
+          activeTab={activeTab}
+          onChange={(id) => setActiveTab(id)}
+        />
+        <Button variant="success">
           Save
-        </button>
+        </Button>
       </div>
 
       {activeTab === 'Sponsor Ads' ? (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AuthLayout } from './AuthLayout';
+import { AuthLayout } from '../components/AuthLayout';
 
 export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();

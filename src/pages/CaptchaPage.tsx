@@ -1,4 +1,8 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { GenerateButton } from '../components/GenerateButton';
 
 type ConfigItem = { securityCode: string; captcha: string };
 type IpRow = { id: string; serviceProvider: string; ipAddress: string };
@@ -166,12 +170,7 @@ function MisReportForm() {
           <option value="PDF">PDF</option>
         </select>
         <div className="flex justify-end">
-          <button
-            type="submit"
-            className="whitespace-nowrap rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            Generate Report
-          </button>
+          <GenerateButton type="submit" />
         </div>
       </form>
     </div>
@@ -315,25 +314,11 @@ export const CaptchaPage: React.FC = () => {
 
   return (
     <div>
-      {/* Tab bar */}
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={[
-                'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-                isActive ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
-              ].join(' ')}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs
+        tabs={TABS}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id)}
+      />
 
       {activeTab === 'security' && (
         <div className="flex w-full flex-col gap-4 p-4 sm:p-6">
@@ -385,14 +370,12 @@ export const CaptchaPage: React.FC = () => {
                 </table>
               </div>
               <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
+                <Button
                   onClick={handleSaveCaptcha}
                   disabled={saving}
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </CollapsibleSecuritySection>
@@ -463,21 +446,16 @@ export const CaptchaPage: React.FC = () => {
                 </table>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleAddIpRow}
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
-                >
+                <Button onClick={handleAddIpRow}>
                   Add Row
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={handleSaveIp}
                   disabled={ipSaving}
-                  className="rounded-sm border border-slate-300 bg-white px-8 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {ipSaving ? 'Saving…' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </CollapsibleSecuritySection>
@@ -548,21 +526,16 @@ export const CaptchaPage: React.FC = () => {
                 </table>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleAddMacRow}
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
-                >
+                <Button onClick={handleAddMacRow}>
                   Add Row
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={handleSaveMac}
                   disabled={macSaving}
-                  className="rounded-sm border border-slate-300 bg-white px-8 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
                 >
                   {macSaving ? 'Saving…' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </CollapsibleSecuritySection>

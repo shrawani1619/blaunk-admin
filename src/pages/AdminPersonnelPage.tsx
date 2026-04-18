@@ -1,4 +1,9 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { GenerateButton } from '../components/GenerateButton';
+import { ReportFilters } from '../components/ReportFilters';
 
 const TABS = [
   'Country Login',
@@ -94,94 +99,52 @@ export const AdminPersonnelPage: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col gap-4">
-      <div>
-        <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" aria-label="Tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={[
-                'whitespace-nowrap rounded-sm px-8 py-3 text-base font-semibold transition',
-                activeTab === tab
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-transparent text-slate-700 hover:bg-white',
-              ].join(' ')}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Tabs
+        tabs={TABS.map(t => ({ id: t, label: t }))}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id)}
+      />
 
       <div>
         {activeTab === 'MIS' && (
           <>
             <h2 className="mb-4 text-4xl font-bold text-primary">MIS</h2>
-            <div className="overflow-x-auto rounded-sm border border-primary/70">
-              <div
-                className="grid min-w-[980px] gap-0 bg-primary px-2 py-3 text-left text-sm font-semibold text-white"
-                style={{ gridTemplateColumns: '1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr' }}
-              >
-                <div className="px-2">From Date</div>
-                <div className="px-2">To Date</div>
-                <div className="px-2">Department</div>
-                <div className="px-2">Data</div>
-                <div className="px-2">Report Type</div>
-                <div className="px-2">Output Format</div>
-                <div className="px-2">Actions</div>
+            <ReportFilters
+              columns={['From Date', 'To Date', 'Department', 'Data', 'Report Type', 'Output Format', 'Actions']}
+              gridTemplate="1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr"
+              paddingY="py-4"
+              gap="gap-x-2"
+            >
+              <div className="px-1">
+                <Input
+                  type="date"
+                  value={misFromDate}
+                  onChange={(e) => setMisFromDate(e.target.value)}
+                />
               </div>
-
-              <div
-                className="grid min-w-[980px] gap-3 border-t border-slate-200 bg-white px-2 py-3"
-                style={{ gridTemplateColumns: '1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr' }}
-              >
-                <div className="px-1">
-                  <input
-                    type="date"
-                    value={misFromDate}
-                    onChange={(e) => setMisFromDate(e.target.value)}
-                    className={filterInputClass}
-                  />
-                </div>
-                <div className="px-1">
-                  <input
-                    type="date"
-                    value={misToDate}
-                    onChange={(e) => setMisToDate(e.target.value)}
-                    className={filterInputClass}
-                  />
-                </div>
-                <div className="px-1">
-                  <div className={`${filterInputClass} flex items-center bg-slate-100 font-semibold text-slate-700`}>
-                    Admin
-                  </div>
-                </div>
-                <div className="px-1">
-                  <div className={`${filterInputClass} flex items-center bg-slate-100 font-semibold text-slate-700`}>
-                    All
-                  </div>
-                </div>
-                <div className="px-1">
-                  <div className={`${filterInputClass} flex items-center bg-slate-100 font-semibold text-slate-700`}>
-                    MIS - Verifier
-                  </div>
-                </div>
-                <div className="px-1">
-                  <div className={`${filterInputClass} flex items-center bg-slate-100 font-semibold text-slate-700`}>
-                    Excel
-                  </div>
-                </div>
-                <div className="px-1">
-                  <button
-                    type="button"
-                    className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-                  >
-                    Generate Report
-                  </button>
-                </div>
+              <div className="px-1">
+                <Input
+                  type="date"
+                  value={misToDate}
+                  onChange={(e) => setMisToDate(e.target.value)}
+                />
               </div>
-            </div>
+              <div className="px-1">
+                <Input isReadOnly value="Admin" />
+              </div>
+              <div className="px-1">
+                <Input isReadOnly value="All" />
+              </div>
+              <div className="px-1">
+                <Input isReadOnly value="MIS - Verifier" />
+              </div>
+              <div className="px-1">
+                <Input isReadOnly value="Excel" />
+              </div>
+              <div className="px-1">
+                <GenerateButton onClick={() => {}} />
+              </div>
+            </ReportFilters>
           </>
         )}
 
@@ -266,12 +229,9 @@ export const AdminPersonnelPage: React.FC = () => {
                   </select>
                 </div>
 
-                <button
-                  type="button"
-                  className="rounded-sm bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-                >
+                <Button variant="success" onClick={() => {}}>
                   Save
-                </button>
+                </Button>
               </div>
 
               <h3 className="mb-4 text-3xl font-semibold text-slate-800">{mediaSection}</h3>
@@ -446,12 +406,9 @@ export const AdminPersonnelPage: React.FC = () => {
             </div>
 
             <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                className="rounded-sm bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-              >
+              <Button variant="success" onClick={() => {}}>
                 Save
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -479,12 +436,9 @@ export const AdminPersonnelPage: React.FC = () => {
                   </svg>
                 </button>
               </div>
-              <button
-                type="button"
-                className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-              >
+              <Button onClick={() => {}}>
                 Save Changes
-              </button>
+              </Button>
             </div>
 
             <div className="overflow-x-auto border border-slate-200 bg-white">
@@ -685,13 +639,9 @@ export const AdminPersonnelPage: React.FC = () => {
             </section>
 
             <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => setContestEditing((prev) => !prev)}
-                className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-              >
+              <Button onClick={() => setContestEditing((prev) => !prev)}>
                 {contestEditing ? 'Save' : 'Edit'}
-              </button>
+              </Button>
             </div>
           </>
         )}

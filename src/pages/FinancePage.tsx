@@ -1,4 +1,10 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { GenerateButton } from '../components/GenerateButton';
+import { ReportFilters } from '../components/ReportFilters';
+import { Select } from '../components/Select';
 
 const TABS = ['B2B - Payment', 'MIS', 'Upload'] as const;
 
@@ -233,28 +239,11 @@ export const FinancePage: React.FC = () => {
 
   return (
     <div className="mx-auto flex max-w-[100rem] flex-col gap-4">
-      <div className="flex flex-wrap gap-1" role="tablist" aria-label="Finance sections">
-        {TABS.map((tab) => {
-          const isActive = tab === activeTab;
-          return (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(tab)}
-              className={[
-                'rounded-sm border px-8 py-3 text-base font-semibold shadow-sm transition',
-                isActive
-                  ? 'border-primary bg-primary text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50',
-              ].join(' ')}
-            >
-              {tab}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs
+        tabs={TABS.map(t => ({ id: t, label: t }))}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id)}
+      />
 
       {activeTab === 'B2B - Payment' ? (
         <>
@@ -263,37 +252,32 @@ export const FinancePage: React.FC = () => {
           <section className="rounded-xl border border-slate-200 bg-white shadow-card">
             <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4 lg:gap-6">
               <div className="min-w-0 flex-1 sm:max-w-xs">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">Order ID</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Search by Order ID"
-                    value={orderIdSearch}
-                    onChange={(e) => setOrderIdSearch(e.target.value)}
-                    className={filterInputClass}
-                    autoComplete="off"
-                  />
-                  <button
-                    type="button"
-                    className="flex h-10 shrink-0 items-center justify-center rounded-md bg-primary px-3 text-white shadow-sm transition hover:bg-primary-dark"
-                    aria-label="Search"
-                  >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
+                <Input
+                  label="Order ID"
+                  placeholder="Search by Order ID"
+                  value={orderIdSearch}
+                  onChange={(e) => setOrderIdSearch(e.target.value)}
+                  className="flex-1"
+                />
               </div>
               <div className="w-full min-w-[10rem] sm:w-auto sm:max-w-[11rem]">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">From</label>
-                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className={filterInputClass} />
+                <Input
+                  label="From"
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
               </div>
               <div className="w-full min-w-[10rem] sm:w-auto sm:max-w-[11rem]">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">To</label>
-                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className={filterInputClass} />
+                <Input
+                  label="To"
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
               </div>
               <div className="w-full min-w-[10rem] sm:w-auto sm:max-w-[12rem]">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">Type</label>
+                <label className="mb-1 block text-xs font-bold text-slate-700">Type</label>
                 <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={filterInputClass}>
                   <option value="">Select Type</option>
                   <option value="payin">Pay-in</option>
@@ -301,7 +285,7 @@ export const FinancePage: React.FC = () => {
                 </select>
               </div>
               <div className="w-full min-w-[10rem] sm:w-auto sm:max-w-[12rem]">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">Status</label>
+                <label className="mb-1 block text-xs font-bold text-slate-700">Status</label>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={filterInputClass}>
                   <option value="">Select Status</option>
                   {STATUS_OPTIONS.map((s) => (
@@ -312,29 +296,17 @@ export const FinancePage: React.FC = () => {
                 </select>
               </div>
               <div className="flex w-full justify-end sm:ml-auto sm:w-auto">
-                <button
-                  type="button"
-                  onClick={handleSaveFilters}
-                  className="h-10 rounded-lg bg-primary px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                >
+                <Button onClick={handleSaveFilters}>
                   Save
-                </button>
+                </Button>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 border-b border-slate-100 px-4 py-2">
-              <button
-                type="button"
-                onClick={addRow}
-                className="inline-flex h-9 min-w-[2.25rem] items-center justify-center gap-1.5 rounded-lg border border-primary bg-white px-3 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                title="Add row"
-                aria-label="Add row"
-              >
-                <span className="text-lg leading-none" aria-hidden>
-                  +
-                </span>
-                <span className="hidden sm:inline">Add row</span>
-              </button>
+              <Button variant="secondary" size="md" onClick={addRow}>
+                <span className="text-lg leading-none" aria-hidden>+</span>
+                <span>Add row</span>
+              </Button>
             </div>
 
             <div className="overflow-x-auto px-4 pb-2 pt-1 [-webkit-overflow-scrolling:touch]">
@@ -684,88 +656,60 @@ export const FinancePage: React.FC = () => {
         <section className="bg-transparent p-0 shadow-none">
           <h2 className="mb-4 text-[2rem] font-bold text-primary">MIS</h2>
 
-          <div className="overflow-x-auto rounded-sm border border-primary/70">
-            <div
-              className="grid min-w-[970px] gap-0 bg-primary px-2 py-3 text-left text-sm font-semibold text-white"
-              style={{ gridTemplateColumns: '1.1fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr 1fr' }}
-            >
-              <div className="px-2">From Date</div>
-              <div className="px-2">To Date</div>
-              <div className="px-2">Department</div>
-              <div className="px-2">Data</div>
-              <div className="px-2">Reports</div>
-              <div className="px-2">Output Format</div>
-              <div className="px-2">Actions</div>
+          <ReportFilters
+            columns={['From Date', 'To Date', 'Department', 'Data', 'Report Type', 'Output Format', 'Actions']}
+            gridTemplate="1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr"
+            paddingY="py-4"
+            gap="gap-x-2"
+          >
+            <div className="px-1">
+              <Input
+                type="date"
+                value={misFromDate}
+                onChange={(e) => setMisFromDate(e.target.value)}
+              />
             </div>
-
-            <div
-              className="grid min-w-[970px] gap-3 border-t border-slate-200 bg-white px-2 py-3"
-              style={{ gridTemplateColumns: '1.1fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr 1fr' }}
-            >
-              <div className="px-1">
-                <input
-                  type="date"
-                  value={misFromDate}
-                  onChange={(e) => setMisFromDate(e.target.value)}
-                  className={filterInputClass}
-                />
-              </div>
-              <div className="px-1">
-                <input
-                  type="date"
-                  value={misToDate}
-                  onChange={(e) => setMisToDate(e.target.value)}
-                  className={filterInputClass}
-                />
-              </div>
-              <div className="px-1">
-                <select
-                  value={misDepartment}
-                  onChange={(e) => setMisDepartment(e.target.value)}
-                  className={filterInputClass}
-                >
-                  <option value="">Select Depart</option>
-                  <option value="customer-care">Customer Care</option>
-                  <option value="finance">Finance</option>
-                </select>
-              </div>
-              <div className="px-1">
-                <input
-                  type="text"
-                  value={misData}
-                  onChange={(e) => setMisData(e.target.value)}
-                  className={filterInputClass}
-                />
-              </div>
-              <div className="px-1">
-                <select
-                  value={misReport}
-                  onChange={(e) => setMisReport(e.target.value)}
-                  className={filterInputClass}
-                >
-                  <option value="">Select Report</option>
-                  {misReportOptions.map((report) => (
-                    <option key={report} value={report}>
-                      {report}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="px-1">
-                <div className={`${filterInputClass} flex items-center bg-slate-100 font-semibold text-slate-700`}>
-                  Excel
-                </div>
-              </div>
-              <div className="flex items-center px-1">
-                <button
-                  type="button"
-                  className="h-10 w-full rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-                >
-                  Generate Report
-                </button>
-              </div>
+            <div className="px-1">
+              <Input
+                type="date"
+                value={misToDate}
+                onChange={(e) => setMisToDate(e.target.value)}
+              />
             </div>
-          </div>
+            <div className="px-1">
+              <Select
+                value={misDepartment}
+                onChange={(e) => setMisDepartment(e.target.value)}
+                options={[
+                  { value: '', label: 'Select Depart' },
+                  { value: 'customer-care', label: 'Customer Care' },
+                  { value: 'finance', label: 'Finance' }
+                ]}
+              />
+            </div>
+            <div className="px-1">
+              <Input
+                value={misData}
+                onChange={(e) => setMisData(e.target.value)}
+              />
+            </div>
+            <div className="px-1">
+              <Select
+                value={misReport}
+                onChange={(e) => setMisReport(e.target.value)}
+                options={[
+                  { value: '', label: 'Select Report' },
+                  ...misReportOptions.map(r => ({ value: r, label: r }))
+                ]}
+              />
+            </div>
+            <div className="px-1">
+              <Input isReadOnly value="Excel" />
+            </div>
+            <div className="px-1">
+              <GenerateButton onClick={() => {}} isFullWidth size="md" />
+            </div>
+          </ReportFilters>
         </section>
       ) : (
         <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6">
