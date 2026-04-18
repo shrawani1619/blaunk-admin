@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollContainer } from '../components/ScrollContainer';
 
 const PLAN_COLUMNS = [
   'Silver - 3M',
@@ -92,7 +93,7 @@ export const VoucherPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="max-h-[min(70vh,720px)] overflow-auto">
+      <ScrollContainer orientation="both" className="max-h-[min(70vh,720px)]">
         <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead className="sticky top-0 z-10">
             <tr className="bg-primary text-white">
@@ -160,7 +161,7 @@ export const VoucherPage: React.FC = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollContainer>
     </div>
   );
 };

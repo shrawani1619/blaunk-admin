@@ -1,4 +1,10 @@
 import React from 'react';
+import { Button } from '../components/Button';
+import { Tabs } from '../components/Tabs';
+import { Input } from '../components/Input';
+import { Select } from '../components/Select';
+import { GenerateButton } from '../components/GenerateButton';
+import { ReportFilters } from '../components/ReportFilters';
 
 const TOP_TABS = ['Upload', 'MIS'] as const;
 const AD_CATEGORIES = [
@@ -167,80 +173,54 @@ export const SalesPage: React.FC = () => {
         <section className="space-y-4">
           <h2 className="text-5xl font-bold text-primary">MIS</h2>
 
-          <div className="overflow-x-auto rounded-sm border border-primary/70">
-            <div
-              className="grid min-w-[980px] gap-0 bg-primary px-2 py-3 text-left text-sm font-semibold text-white"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr' }}
-            >
-              <div className="px-2">From Date</div>
-              <div className="px-2">To Date</div>
-              <div className="px-2">Department</div>
-              <div className="px-2">Data</div>
-              <div className="px-2">Report Type</div>
-              <div className="px-2">Output Format</div>
-              <div className="px-2">Actions</div>
+          <ReportFilters
+            columns={['From Date', 'To Date', 'Department', 'Data', 'Report Type', 'Output Format', 'Actions']}
+            gridTemplate="1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr"
+            gap="gap-x-2"
+            paddingY="py-4"
+          >
+            <div className="px-1">
+              <Input
+                type="date"
+                value={misFromDate}
+                onChange={(e) => setMisFromDate(e.target.value)}
+              />
             </div>
-
-            <div
-              className="grid min-w-[980px] gap-3 border-t border-slate-200 bg-white px-2 py-3"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr' }}
-            >
-              <div className="px-1">
-                <input
-                  type="date"
-                  value={misFromDate}
-                  onChange={(e) => setMisFromDate(e.target.value)}
-                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                />
-              </div>
-              <div className="px-1">
-                <input
-                  type="date"
-                  value={misToDate}
-                  onChange={(e) => setMisToDate(e.target.value)}
-                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                />
-              </div>
-              <div className="px-1">
-                <div className="flex h-11 items-center rounded-md border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-slate-800">
-                  Sales
-                </div>
-              </div>
-              <div className="px-1">
-                <div className="flex h-11 items-center rounded-md border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-slate-800">
-                  All
-                </div>
-              </div>
-              <div className="px-1">
-                <select
-                  value={misReportType}
-                  onChange={(e) => setMisReportType(e.target.value)}
-                  className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                >
-                  <option value="">Select Report</option>
-                  <option value="mis-subscription">MIS - Subscription</option>
-                  <option value="mis-lead-tour">MIS - Lead Tour</option>
-                  <option value="mis-lead-cake">MIS - Lead Cake</option>
-                  <option value="mis-lead-store">MIS - Lead Store</option>
-                  <option value="mis-product-listing">MIS - Product Listing</option>
-                  <option value="mis-email-subscription">MIS - Email Subscription</option>
-                </select>
-              </div>
-              <div className="px-1">
-                <div className="flex h-11 items-center rounded-md border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-slate-800">
-                  Excel
-                </div>
-              </div>
-              <div className="px-1">
-                <button
-                  type="button"
-                  className="h-11 w-full rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-                >
-                  Generate Report
-                </button>
-              </div>
+            <div className="px-1">
+              <Input
+                type="date"
+                value={misToDate}
+                onChange={(e) => setMisToDate(e.target.value)}
+              />
             </div>
-          </div>
+            <div className="px-1">
+              <Input isReadOnly value="Sales" />
+            </div>
+            <div className="px-1">
+              <Input isReadOnly value="All" />
+            </div>
+            <div className="px-1">
+              <Select
+                value={misReportType}
+                onChange={(e) => setMisReportType(e.target.value)}
+                options={[
+                  { value: '', label: 'Select Report' },
+                  { value: 'mis-subscription', label: 'MIS - Subscription' },
+                  { value: 'mis-lead-tour', label: 'MIS - Lead Tour' },
+                  { value: 'mis-lead-cake', label: 'MIS - Lead Cake' },
+                  { value: 'mis-lead-store', label: 'MIS - Lead Store' },
+                  { value: 'mis-product-listing', label: 'MIS - Product Listing' },
+                  { value: 'mis-email-subscription', label: 'MIS - Email Subscription' }
+                ]}
+              />
+            </div>
+            <div className="px-1">
+              <Input isReadOnly value="Excel" />
+            </div>
+            <div className="px-1">
+              <GenerateButton onClick={() => {}} />
+            </div>
+          </ReportFilters>
         </section>
       ) : (
         <section className="space-y-4">
@@ -349,7 +329,7 @@ export const SalesPage: React.FC = () => {
                 <div className="flex gap-3">
                   <div className="h-28 w-28 shrink-0 overflow-hidden rounded border border-slate-200 bg-slate-100">
                     <img
-                      src="https://via.placeholder.com/112x112?text=Ad"
+                      src="https://placehold.co/112x112?text=AD"
                       alt={`Ad ${card.id}`}
                       className="h-full w-full object-cover"
                     />

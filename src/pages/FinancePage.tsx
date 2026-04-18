@@ -3,7 +3,7 @@ import { Button } from '../components/Button';
 import { Tabs } from '../components/Tabs';
 import { Input } from '../components/Input';
 import { GenerateButton } from '../components/GenerateButton';
-import { ReportFilters } from '../components/ReportFilters';
+import ReportFilters from '../components/ReportFilters';
 import { Select } from '../components/Select';
 
 const TABS = ['B2B - Payment', 'MIS', 'Upload'] as const;

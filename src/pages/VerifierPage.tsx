@@ -4,7 +4,7 @@ import { Tabs } from '../components/Tabs';
 import { Input } from '../components/Input';
 import { Select } from '../components/Select';
 import { GenerateButton } from '../components/GenerateButton';
-import { ReportFilters } from '../components/ReportFilters';
+import ReportFilters from '../components/ReportFilters';
 
 const TABS = ['MIS', 'Verifier'] as const;
 

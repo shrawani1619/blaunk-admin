@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '../components/Button';
 import { Tabs } from '../components/Tabs';
 import { Input } from '../components/Input';
+import { Select } from '../components/Select';
 
 const TABS = ['BGT', 'Sponsor Ads'] as const;
 
@@ -24,13 +25,13 @@ const SPONSOR_OPTIONS = [
 ] as const;
 const SPONSOR_SECTIONS = [
   'Select Section',
-  'HOMEPAGE',
+  'Homepage',
   'BGT',
-  'TOUR',
-  'STORE',
-  'CAKE',
-  'BOUTIQUE',
-  'LOGISTIC',
+  'Tour',
+  'Store',
+  'Cake',
+  'Boutique',
+  'Logistic',
 ] as const;
 const SPONSOR_COUNTRIES = [
   'Select Country',
@@ -105,55 +106,38 @@ export const MAUploadPage: React.FC = () => {
       {activeTab === 'Sponsor Ads' ? (
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="max-w-sm">
-              <label className="mb-2 block text-sm font-semibold text-slate-700">Section</label>
-              <select
+            <div className="w-full sm:max-w-sm">
+              <Select
+                label="Section"
                 value={sponsorSection}
                 onChange={(e) => {
                   setSponsorSection(e.target.value);
                   setSponsorOption('');
                   setSponsorCountry('');
                 }}
-                className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-              >
-                {SPONSOR_SECTIONS.map((section) => (
-                  <option key={section} value={section === 'Select Section' ? '' : section}>
-                    {section}
-                  </option>
-                ))}
-              </select>
+                options={SPONSOR_SECTIONS.map(s => ({ value: s === 'Select Section' ? '' : s, label: s }))}
+              />
             </div>
 
             {sponsorSection ? (
               <>
-                <div className="max-w-sm">
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Options</label>
-                  <select
+                <div className="w-full sm:max-w-sm">
+                  <Select
+                    label="Options"
                     value={sponsorOption}
+                    className="sponsor-options-case"
                     onChange={(e) => setSponsorOption(e.target.value)}
-                    className="sponsor-options-case h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                  >
-                    {SPONSOR_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt === 'Select Option' ? '' : opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
+                    options={SPONSOR_OPTIONS.map(o => ({ value: o === 'Select Option' ? '' : o, label: o }))}
+                  />
                 </div>
 
-                <div className="max-w-sm">
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Country</label>
-                  <select
+                <div className="w-full sm:max-w-sm">
+                  <Select
+                    label="Country"
                     value={sponsorCountry}
                     onChange={(e) => setSponsorCountry(e.target.value)}
-                    className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                  >
-                    {SPONSOR_COUNTRIES.map((country) => (
-                      <option key={country} value={country === 'Select Country' ? '' : country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
+                    options={SPONSOR_COUNTRIES.map(c => ({ value: c === 'Select Country' ? '' : c, label: c }))}
+                  />
                 </div>
               </>
             ) : null}
@@ -161,19 +145,13 @@ export const MAUploadPage: React.FC = () => {
         </section>
       ) : (
         <>
-          <div className="max-w-sm">
-            <label className="mb-2 block text-sm font-semibold text-slate-700">Select Option</label>
-            <select
+          <div className="w-full sm:max-w-sm">
+            <Select
+              label="Select Option"
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-            >
-              {productOptions.map((opt) => (
-                <option key={opt} value={opt === 'Select Product' ? '' : opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+              options={productOptions.map(o => ({ value: o.includes('Select') ? '' : o, label: o }))}
+            />
           </div>
 
           {selectedProduct ? (

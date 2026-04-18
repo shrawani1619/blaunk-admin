@@ -3,7 +3,7 @@ import { Button } from '../components/Button';
 import { Tabs } from '../components/Tabs';
 import { Input } from '../components/Input';
 import { GenerateButton } from '../components/GenerateButton';
-import { ReportFilters } from '../components/ReportFilters';
+import ReportFilters from '../components/ReportFilters';
 
 const TABS = [
   'Country Login',

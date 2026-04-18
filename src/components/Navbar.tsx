@@ -35,16 +35,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </svg>
           </button>
         ) : null}
-        <span className="select-none text-xl font-extrabold tracking-[0.12em] text-[#e8c547] drop-shadow-sm">
+        <span className="select-none text-xl font-extrabold tracking-[0.12em] text-[#e8c547] drop-shadow-sm shrink-0">
           BLAUNK
         </span>
       </div>
-      <div className="flex items-center gap-4 text-sm text-white/90">
-        <span>{loginLabel}</span>
+      <div className="flex items-center gap-2 sm:gap-4 text-sm text-white/90">
+        <div className="flex flex-col items-end leading-tight sm:block sm:leading-normal">
+          <span className="hidden text-[10px] opacity-70 sm:inline sm:text-xs">Login: </span>
+          <span className="font-bold sm:font-normal">{loginLabel.replace('Login: ', '')}</span>
+        </div>
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-md border border-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+          className="rounded-md border border-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white transition hover:bg-white/10 sm:px-4 sm:text-xs"
         >
           Logout
         </button>

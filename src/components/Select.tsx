@@ -15,7 +15,7 @@ export const Select: React.FC<SelectProps> = ({
   className = '',
   ...props
 }) => {
-  const baseSelectStyles = 'w-full rounded-sm border border-slate-300 bg-white px-3 h-11 text-base font-semibold text-slate-900 shadow-sm outline-none transition appearance-none focus:border-primary focus:ring-2 focus:ring-primary/25';
+  const baseSelectStyles = 'w-full max-w-full rounded-sm border border-slate-300 bg-white px-3 h-11 text-base font-semibold text-slate-900 shadow-sm outline-none transition appearance-none focus:border-primary focus:ring-2 focus:ring-primary/25';
   const readOnlyStyles = 'bg-slate-50 cursor-not-allowed text-slate-500 border-slate-200';
   const errorStyles = 'border-rose-500 focus:border-rose-600 focus:ring-rose-200/50';
 

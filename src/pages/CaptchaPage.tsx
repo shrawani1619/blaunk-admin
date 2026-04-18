@@ -2,7 +2,9 @@ import React from 'react';
 import { Button } from '../components/Button';
 import { Tabs } from '../components/Tabs';
 import { Input } from '../components/Input';
+import { Select } from '../components/Select';
 import { GenerateButton } from '../components/GenerateButton';
+import ReportFilters from '../components/ReportFilters';
 
 type ConfigItem = { securityCode: string; captcha: string };
 type IpRow = { id: string; serviceProvider: string; ipAddress: string };
@@ -96,83 +98,72 @@ function MisReportForm() {
   const [reportType, setReportType] = React.useState('MIS - DDP');
   const [outputFormat, setOutputFormat] = React.useState('Excel');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGenerate = () => {
     // TODO: hook to MIS report API
-    // eslint-disable-next-line no-console
     console.log({ fromDate, toDate, department, code, reportType, outputFormat });
   };
 
-  const fieldClass =
-    'min-w-0 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30';
-
   return (
-    <div className="overflow-hidden">
-      <div
-        className="grid gap-x-4 bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white sm:px-6 sm:text-sm"
-        style={MIS_GRID_STYLE}
+    <div className="w-full">
+      <ReportFilters
+        columns={['From Date', 'To Date', 'Department', 'Code', 'Report Type', 'Output Format', 'Actions']}
+        gridTemplate="1.1fr 1.1fr 1fr 1fr 1.2fr 1fr 0.9fr"
+        paddingY="py-4"
+        gap="gap-x-2"
       >
-        <span>From Date</span>
-        <span>To Date</span>
-        <span>Department</span>
-        <span>Code</span>
-        <span>Report Type</span>
-        <span>Output Format</span>
-        <span className="text-right">Actions</span>
-      </div>
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-3 border border-t-0 border-slate-200 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4"
-        style={MIS_GRID_STYLE}
-      >
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          className={fieldClass}
-        />
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          className={fieldClass}
-        />
-        <input
-          type="text"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          className={fieldClass}
-          placeholder="Department"
-        />
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className={fieldClass}
-          placeholder="(optional)"
-        />
-        <select
-          value={reportType}
-          onChange={(e) => setReportType(e.target.value)}
-          className={fieldClass}
-        >
-          <option value="MIS - DDP">MIS - DDP</option>
-          <option value="MIS - DSA Pay">MIS - DSA Pay</option>
-          <option value="MIS - DSA Sales">MIS - DSA Sales</option>
-          <option value="MIS - DSA Ads">MIS - DSA Ads</option>
-        </select>
-        <select
-          value={outputFormat}
-          onChange={(e) => setOutputFormat(e.target.value)}
-          className={fieldClass}
-        >
-          <option value="Excel">Excel</option>
-          <option value="PDF">PDF</option>
-        </select>
-        <div className="flex justify-end">
-          <GenerateButton type="submit" />
+        <div className="px-1">
+          <Input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
         </div>
-      </form>
+        <div className="px-1">
+          <Input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </div>
+        <div className="px-1">
+          <Input
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+          />
+        </div>
+        <div className="px-1">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="(optional)"
+          />
+        </div>
+        <div className="px-1">
+          <Select
+            value={reportType}
+            onChange={(e) => setReportType(e.target.value)}
+            options={[
+              { value: 'MIS - DDP', label: 'MIS - DDP' },
+              { value: 'MIS - DSA Pay', label: 'MIS - DSA Pay' },
+              { value: 'MIS - DSA Sales', label: 'MIS - DSA Sales' },
+              { value: 'mis-dsa-ads', label: 'MIS - DSA Ads' }
+            ]}
+          />
+        </div>
+        <div className="px-1">
+          <Select
+            value={outputFormat}
+            onChange={(e) => setOutputFormat(e.target.value)}
+            options={[
+              { value: 'Excel', label: 'Excel' },
+              { value: 'PDF', label: 'PDF' }
+            ]}
+          />
+        </div>
+        <div className="px-1">
+          <GenerateButton onClick={handleGenerate} isFullWidth size="md" />
+        </div>
+      </ReportFilters>
     </div>
   );
 }
