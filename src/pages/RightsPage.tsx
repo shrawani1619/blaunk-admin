@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '../components/Button';
 import { Tabs } from '../components/Tabs';
-import { Input } from '../components/Input';
 import { EmployeeDropdown } from '../components/EmployeeDropdown';
 import { PermissionList, PERMISSIONS } from '../components/PermissionList';
 import { PlanCharges } from '../components/PlanCharges';
@@ -15,14 +14,10 @@ import { MisReports } from '../components/MisReports';
 const emptyPermissions = (): Record<string, boolean> =>
   Object.fromEntries(PERMISSIONS.map((p) => [p, false]));
 
-const MAC_FIELD_CLASSES =
-  'h-11 w-full min-w-[10rem] rounded-md border border-slate-300 px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:bg-slate-50';
-
 export const RightsPage: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = React.useState<string>('');
   const [employeeType, setEmployeeType] = React.useState<'employee' | '3pc'>('employee');
   const [permissions, setPermissions] = React.useState<Record<string, boolean>>(emptyPermissions);
-  const [macEntry, setMacEntry] = React.useState('');
   const [rightsSaveStatus, setRightsSaveStatus] = React.useState<string | null>(null);
   const [rightsLoading, setRightsLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<string>('Rights');
@@ -32,12 +27,10 @@ export const RightsPage: React.FC = () => {
   React.useEffect(() => {
     if (!selectedEmployee) {
       setPermissions(emptyPermissions());
-      setMacEntry('');
       return;
     }
     setRightsLoading(true);
     setPermissions(emptyPermissions());
-    setMacEntry('');
     setRightsLoading(false);
   }, [selectedEmployee, typeParam]);
 
@@ -87,8 +80,8 @@ export const RightsPage: React.FC = () => {
                   className="max-w-md"
                 />
 
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr,1.5fr,1fr] lg:items-end">
-                  <div className="min-w-0">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0 flex-1">
                     <EmployeeDropdown
                       label=""
                       value={selectedEmployee}
@@ -96,27 +89,10 @@ export const RightsPage: React.FC = () => {
                       type={employeeType}
                     />
                   </div>
-                  <div className="min-w-0">
-                    <label className="mb-1 block text-xs font-semibold text-violet-700">
-                      MAC Entry
-                    </label>
-                    <input
-                      type="text"
-                      className={MAC_FIELD_CLASSES}
-                      placeholder="e.g. AA:BB:CC:DD:EE:FF"
-                      value={macEntry}
-                      disabled={!selectedEmployee || rightsLoading}
-                      onChange={(event) => {
-                        setMacEntry(event.target.value);
-                        setRightsSaveStatus(null);
-                      }}
-                      autoComplete="off"
-                    />
-                  </div>
                   <Button
                     onClick={handleSaveRights}
                     disabled={!selectedEmployee || rightsLoading}
-                    className="w-full sm:w-auto"
+                    className="w-full shrink-0 sm:w-auto"
                   >
                     {rightsLoading ? 'Saving…' : 'Save'}
                   </Button>
@@ -217,25 +193,13 @@ export const RightsPage: React.FC = () => {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-3">
-      {/* Tabs + Edit */}
+      {/* Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs
           tabs={tabs.map(t => ({ id: t, label: t }))}
           activeTab={activeTab}
           onChange={(id) => setActiveTab(id)}
         />
-        {activeTab !== 'Commission' &&
-        activeTab !== 'Paybank' &&
-        activeTab !== 'Voucher' &&
-        activeTab !== 'DSA Limit Check' &&
-        activeTab !== 'Company Details' ? (
-          <button
-            type="button"
-            className="rounded-lg border border-primary bg-white px-4 py-2 text-sm font-medium text-primary shadow-sm transition hover:bg-primary/5"
-          >
-            Edit
-          </button>
-        ) : null}
       </div>
 
       {/* Page title */}

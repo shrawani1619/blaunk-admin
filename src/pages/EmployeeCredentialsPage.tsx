@@ -1278,7 +1278,7 @@ export const EmployeeCredentialsPage: React.FC = () => {
           <div className="mt-6">
             <button
               type="button"
-              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-dark"
             >
               Save
             </button>

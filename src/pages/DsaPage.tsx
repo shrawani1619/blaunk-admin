@@ -106,15 +106,17 @@ export const DsaPage: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" aria-label="DSA tabs">
+      <div className="flex flex-wrap gap-2 w-fit" aria-label="DSA tabs">
         {TABS.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
             className={[
-              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-              activeTab === tab ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
+              'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
+              activeTab === tab
+                ? 'border-primary bg-primary text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
             ].join(' ')}
           >
             {tab}
@@ -188,7 +190,7 @@ export const DsaPage: React.FC = () => {
               <div className="px-1">
                 <button
                   type="button"
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+                  className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
                 >
                   Generate Report
                 </button>
@@ -234,7 +236,7 @@ export const DsaPage: React.FC = () => {
             <h3 className="text-4xl font-bold text-primary">DSA Details</h3>
             <button
               type="button"
-              className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
             >
               Save
             </button>
@@ -354,15 +356,17 @@ export const DsaPage: React.FC = () => {
           <h2 className="text-4xl font-bold text-primary">Media Upload</h2>
 
           <div className="rounded-sm border border-slate-200 bg-white p-3 sm:p-4">
-            <div className="mb-4 flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1 w-fit">
+            <div className="mb-4 flex flex-wrap gap-2 w-fit">
               {MEDIA_TABS.map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveMediaTab(tab)}
                   className={[
-                    'rounded-sm px-4 py-1.5 text-xs font-semibold transition',
-                    activeMediaTab === tab ? 'bg-primary text-white shadow-sm' : 'bg-transparent text-slate-700 hover:bg-white',
+                    'rounded-md border px-4 py-1.5 text-xs font-semibold shadow-sm transition',
+                    activeMediaTab === tab
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
                   ].join(' ')}
                 >
                   {tab}
@@ -528,14 +532,14 @@ export const DsaPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={onCancelImage}
-                            className="rounded-sm bg-slate-400 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-slate-500"
+                            className="rounded-sm bg-slate-400 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-500"
                           >
                             Cancel
                           </button>
                           <button
                             type="button"
                             onClick={onApplyImage}
-                            className="rounded-sm bg-emerald-500 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-600"
+                            className="rounded-sm bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
                           >
                             Apply
                           </button>

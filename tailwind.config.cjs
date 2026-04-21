@@ -8,7 +8,7 @@ module.exports = {
           DEFAULT: '#0b61c9',
           dark: '#084a99',
         },
-        background: '#f3f5fb',
+        background: '#ffffff',
       },
       boxShadow: {
         navbar: '0 2px 4px rgba(15, 23, 42, 0.12)',

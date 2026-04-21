@@ -243,15 +243,15 @@ export const ShareholdingPage: React.FC = () => {
   return (
     <div className="flex w-full flex-col gap-4">
       {/* Inner tabs */}
-      <div className="flex gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
+      <div className="flex gap-2 w-fit">
         <button
           type="button"
           onClick={() => setActiveInnerTab('shareholding')}
           className={[
-            'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
+            'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
             activeInnerTab === 'shareholding'
-              ? 'bg-primary text-white'
-              : 'bg-transparent text-slate-700 hover:bg-white',
+              ? 'border-primary bg-primary text-white'
+              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
           ].join(' ')}
         >
           Shareholding
@@ -260,10 +260,10 @@ export const ShareholdingPage: React.FC = () => {
           type="button"
           onClick={() => setActiveInnerTab('mis')}
           className={[
-            'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
+            'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
             activeInnerTab === 'mis'
-              ? 'bg-primary text-white'
-              : 'bg-transparent text-slate-700 hover:bg-white',
+              ? 'border-primary bg-primary text-white'
+              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
           ].join(' ')}
         >
           MIS

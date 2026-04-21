@@ -70,6 +70,7 @@ export const MAUploadPage: React.FC = () => {
   const [files, setFiles] = React.useState<Record<number, string>>({});
   const [previews, setPreviews] = React.useState<Record<number, string>>({});
   const [aspectRatio, setAspectRatio] = React.useState('1.46:1');
+  const [isEditing, setIsEditing] = React.useState(false);
 
   const productOptions = activeTab === 'BGT' ? BGT_OPTIONS : SPONSOR_OPTIONS;
 
@@ -80,7 +81,12 @@ export const MAUploadPage: React.FC = () => {
     setSponsorCountry('');
     setFiles({});
     setPreviews({});
+    setIsEditing(false);
   }, [activeTab]);
+
+  React.useEffect(() => {
+    setIsEditing(false);
+  }, [selectedProduct]);
 
   React.useEffect(() => {
     if (!selectedProduct) {
@@ -92,66 +98,95 @@ export const MAUploadPage: React.FC = () => {
 
   return (
     <div className="mx-auto flex max-w-[100rem] flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <Tabs
-          tabs={TABS.map(t => ({ id: t, label: t }))}
-          activeTab={activeTab}
-          onChange={(id) => setActiveTab(id)}
-        />
-        <Button variant="success">
-          Save
-        </Button>
-      </div>
+      <Tabs
+        tabs={TABS.map(t => ({ id: t, label: t }))}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id)}
+      />
 
       {activeTab === 'Sponsor Ads' ? (
         <section className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="w-full sm:max-w-sm">
-              <Select
-                label="Section"
-                value={sponsorSection}
-                onChange={(e) => {
-                  setSponsorSection(e.target.value);
-                  setSponsorOption('');
-                  setSponsorCountry('');
-                }}
-                options={SPONSOR_SECTIONS.map(s => ({ value: s === 'Select Section' ? '' : s, label: s }))}
-              />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="min-w-0 w-full sm:max-w-sm">
+                <Select
+                  label="Section"
+                  value={sponsorSection}
+                  onChange={(e) => {
+                    setSponsorSection(e.target.value);
+                    setSponsorOption('');
+                    setSponsorCountry('');
+                  }}
+                  options={SPONSOR_SECTIONS.map(s => ({ value: s === 'Select Section' ? '' : s, label: s }))}
+                />
+              </div>
+
+              {sponsorSection ? (
+                <>
+                  <div className="min-w-0 w-full sm:max-w-sm">
+                    <Select
+                      label="Options"
+                      value={sponsorOption}
+                      className="sponsor-options-case"
+                      onChange={(e) => setSponsorOption(e.target.value)}
+                      options={SPONSOR_OPTIONS.map(o => ({ value: o === 'Select Option' ? '' : o, label: o }))}
+                    />
+                  </div>
+
+                  <div className="min-w-0 w-full sm:max-w-sm">
+                    <Select
+                      label="Country"
+                      value={sponsorCountry}
+                      onChange={(e) => setSponsorCountry(e.target.value)}
+                      options={SPONSOR_COUNTRIES.map(c => ({ value: c === 'Select Country' ? '' : c, label: c }))}
+                    />
+                  </div>
+                </>
+              ) : null}
             </div>
-
-            {sponsorSection ? (
-              <>
-                <div className="w-full sm:max-w-sm">
-                  <Select
-                    label="Options"
-                    value={sponsorOption}
-                    className="sponsor-options-case"
-                    onChange={(e) => setSponsorOption(e.target.value)}
-                    options={SPONSOR_OPTIONS.map(o => ({ value: o === 'Select Option' ? '' : o, label: o }))}
-                  />
-                </div>
-
-                <div className="w-full sm:max-w-sm">
-                  <Select
-                    label="Country"
-                    value={sponsorCountry}
-                    onChange={(e) => setSponsorCountry(e.target.value)}
-                    options={SPONSOR_COUNTRIES.map(c => ({ value: c === 'Select Country' ? '' : c, label: c }))}
-                  />
-                </div>
-              </>
-            ) : null}
+            <div className="shrink-0 sm:pb-[2px]">
+              <Button
+                variant={isEditing ? 'success' : 'secondary'}
+                onClick={() => {
+                  if (isEditing) {
+                    setIsEditing(false);
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+              >
+                {isEditing ? 'Save' : 'Edit'}
+              </Button>
+            </div>
           </div>
         </section>
       ) : (
         <>
-          <div className="w-full sm:max-w-sm">
-            <Select
-              label="Select Option"
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              options={productOptions.map(o => ({ value: o.includes('Select') ? '' : o, label: o }))}
-            />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 w-full sm:max-w-md sm:flex-1">
+              <Select
+                label="Select Option"
+                value={selectedProduct}
+                onChange={(e) => setSelectedProduct(e.target.value)}
+                isReadOnly={isEditing}
+                options={productOptions.map(o => ({ value: o.includes('Select') ? '' : o, label: o }))}
+              />
+            </div>
+            <div className="shrink-0 sm:pb-[2px]">
+              <Button
+                variant={isEditing ? 'success' : 'secondary'}
+                onClick={() => {
+                  if (isEditing) {
+                    setIsEditing(false);
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+                disabled={!selectedProduct}
+              >
+                {isEditing ? 'Save' : 'Edit'}
+              </Button>
+            </div>
           </div>
 
           {selectedProduct ? (
@@ -181,7 +216,12 @@ export const MAUploadPage: React.FC = () => {
                   <p className="text-xl font-bold text-slate-800">
                     {selectedProduct} {slot}
                   </p>
-                  <label className="flex h-44 w-44 cursor-pointer flex-col overflow-hidden rounded border border-red-300 bg-white">
+                  <label
+                    className={[
+                      'flex h-44 w-44 flex-col overflow-hidden rounded border border-red-300 bg-white',
+                      isEditing ? 'cursor-pointer' : 'cursor-default opacity-80',
+                    ].join(' ')}
+                  >
                     <div className="border-b border-red-300 bg-[#ececab] px-2 py-2 text-center text-xs font-semibold text-slate-700">
                       Image
                     </div>
@@ -198,6 +238,7 @@ export const MAUploadPage: React.FC = () => {
                       type="file"
                       accept="image/*"
                       className="hidden"
+                      disabled={!isEditing}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;

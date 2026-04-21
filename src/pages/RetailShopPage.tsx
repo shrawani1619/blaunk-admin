@@ -411,15 +411,17 @@ export const RetailShopPage: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" aria-label="Retail shop tabs">
+      <div className="flex flex-wrap gap-2 w-fit" aria-label="Retail shop tabs">
         {TABS.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
             className={[
-              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-              activeTab === tab ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
+              'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
+              activeTab === tab
+                ? 'border-primary bg-primary text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
             ].join(' ')}
           >
             {tab}
@@ -448,7 +450,7 @@ export const RetailShopPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                className="rounded-sm border border-blue-800 bg-primary px-8 py-3 text-base font-bold text-white shadow-sm hover:bg-primary-dark"
+                className="rounded-sm border border-blue-800 bg-primary px-4 py-1.5 text-sm font-bold text-white shadow-sm hover:bg-primary-dark"
               >
                 Save / Print
               </button>
@@ -988,7 +990,7 @@ export const RetailShopPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-primary sm:text-4xl">Financial Data</h2>
             <button
               type="button"
-              className="rounded-sm bg-primary px-8 py-3 text-base font-bold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-dark"
             >
               Submit
             </button>
@@ -1124,7 +1126,7 @@ export const RetailShopPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-primary sm:text-4xl">Rejection</h2>
             <button
               type="button"
-              className="rounded-sm bg-primary px-8 py-3 text-base font-bold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-dark"
             >
               Submit
             </button>
@@ -1356,7 +1358,7 @@ export const RetailShopPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleBarcodeModalAdd}
-                className="rounded-sm bg-primary px-8 py-3 text-base font-bold text-white shadow-sm transition hover:bg-primary-dark"
+                className="rounded-sm bg-primary px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-dark"
               >
                 Add
               </button>

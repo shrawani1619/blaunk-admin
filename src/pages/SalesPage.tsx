@@ -148,31 +148,21 @@ export const SalesPage: React.FC = () => {
 
   return (
     <div className="mx-auto flex max-w-[100rem] flex-col gap-4">
-      <div className="flex flex-wrap gap-1" role="tablist" aria-label="Sales tabs">
-        {TOP_TABS.map((tab) => {
-          const isActive = tab === activeTopTab;
-          return (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTopTab(tab)}
-              className={[
-                'rounded-sm border px-10 py-3 text-base font-semibold shadow-sm transition',
-                isActive ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-white text-slate-700',
-              ].join(' ')}
-            >
-              {tab}
-            </button>
-          );
-        })}
+      <Tabs
+        tabs={TOP_TABS.map((tab) => ({ id: tab, label: tab }))}
+        activeTab={activeTopTab}
+        onChange={(id) => setActiveTopTab(id)}
+        className="max-w-md"
+      />
+
+      <div className="flex flex-col gap-0.5">
+        <h1 className="text-3xl font-semibold text-primary">
+          {activeTopTab === 'MIS' ? 'MIS' : 'Sales Advertisement'}
+        </h1>
       </div>
 
       {activeTopTab === 'MIS' ? (
         <section className="space-y-4">
-          <h2 className="text-5xl font-bold text-primary">MIS</h2>
-
           <ReportFilters
             columns={['From Date', 'To Date', 'Department', 'Data', 'Report Type', 'Output Format', 'Actions']}
             gridTemplate="1fr 1fr 1fr 0.9fr 1fr 1fr 0.9fr"
@@ -224,25 +214,27 @@ export const SalesPage: React.FC = () => {
         </section>
       ) : (
         <section className="space-y-4">
-          <h1 className="text-4xl font-semibold text-primary">Sales Advertisement</h1>
-
-          <div className="flex flex-wrap items-center gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit">
-            {AD_CATEGORIES.map((cat) => {
-              const isActive = cat === activeCategory;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setActiveCategory(cat)}
-                  className={[
-                    'rounded-sm px-6 py-2.5 text-[15px] font-semibold transition',
-                    isActive ? 'bg-primary text-white shadow-sm' : 'bg-transparent text-slate-700 hover:bg-white',
-                  ].join(' ')}
-                >
-                  {cat}
-                </button>
-              );
-            })}
+          <div className="w-full overflow-x-auto no-scrollbar">
+            <div className="flex w-fit min-w-full flex-nowrap items-center gap-2 sm:min-w-0">
+              {AD_CATEGORIES.map((cat) => {
+                const isActive = cat === activeCategory;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={[
+                      'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
+                      isActive
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
+                    ].join(' ')}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -263,7 +255,7 @@ export const SalesPage: React.FC = () => {
                     setIsEditingCards(true);
                   }}
                   className={[
-                    'h-10 rounded-lg px-4 text-sm font-semibold text-white shadow-sm transition',
+                    'inline-flex items-center rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
                     isEditingCards ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
                   ].join(' ')}
                 >
@@ -273,7 +265,7 @@ export const SalesPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleDeleteSelected}
-                    className="h-10 rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
+                    className="inline-flex items-center rounded-md bg-rose-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
                     disabled={selectedCardIds.length === 0}
                   >
                     Delete Selected ({selectedCardIds.length})
@@ -283,7 +275,7 @@ export const SalesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:max-w-3xl md:grid-cols-2">
+          <div className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-semibold text-slate-700">Section</label>
               <select

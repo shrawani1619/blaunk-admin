@@ -15,7 +15,7 @@ interface TabsProps {
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = '' }) => {
   return (
     <div className={`w-full overflow-x-auto no-scrollbar ${className}`} aria-label="Tabs">
-      <div className="flex w-fit min-w-full gap-1 rounded-sm bg-slate-200/70 p-1.5 sm:min-w-0">
+      <div className="flex w-fit min-w-full gap-2 p-1 sm:min-w-0">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -24,10 +24,10 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
               type="button"
               onClick={() => onChange(tab.id)}
               className={[
-                'whitespace-nowrap rounded-sm px-8 py-3 text-sm font-semibold transition sm:text-base',
+                'whitespace-nowrap rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
                 isActive
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-transparent text-slate-700 hover:bg-white',
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
               ].join(' ')}
             >
               {tab.label}

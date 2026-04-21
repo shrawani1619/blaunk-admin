@@ -11,7 +11,7 @@ interface GenerateButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEleme
 export const GenerateButton: React.FC<GenerateButtonProps> = ({ 
   label = 'Generate Report', 
   isFullWidth = false,
-  size = 'lg',
+  size = 'md',
   variant = 'primary',
   ...props 
 }) => {

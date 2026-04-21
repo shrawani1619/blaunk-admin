@@ -14,7 +14,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   footer,
 }) => {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-white">
       <header className="flex h-16 items-center justify-between bg-primary px-4 shadow-navbar sm:px-6 lg:px-10">
         <span className="text-xl font-extrabold tracking-wide text-white">
           BLAUNK

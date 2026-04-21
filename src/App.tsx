@@ -68,7 +68,7 @@ const AppShell: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar onMenuClick={() => setSidebarOpen((prev) => !prev)} />
       <div className="flex flex-1 pt-16">
         <Sidebar

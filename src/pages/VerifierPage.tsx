@@ -71,7 +71,7 @@ export const VerifierPage: React.FC = () => {
             type="button"
             onClick={() => setActiveTab(tab)}
             className={[
-              'rounded-sm border px-8 py-3 text-base font-semibold shadow-sm transition',
+              'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
               activeTab === tab
                 ? 'border-primary bg-primary text-white hover:bg-primary-dark'
                 : 'border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50',

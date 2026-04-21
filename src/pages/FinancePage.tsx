@@ -779,7 +779,7 @@ export const FinancePage: React.FC = () => {
               type="button"
               onClick={toggleUploadEdit}
               className={[
-                'h-10 rounded-lg px-4 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2',
+                'inline-flex items-center rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2',
                 uploadEditing
                   ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-300'
                   : 'bg-primary hover:bg-primary-dark focus-visible:ring-primary/40',

@@ -9,12 +9,13 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
-  size = 'lg',
+  size = 'md',
   isFullWidth = false,
   className = '',
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold transition shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-sm whitespace-nowrap';
+  const baseStyles =
+    'inline-flex items-center justify-center font-semibold transition shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-md whitespace-nowrap';
   
   const variants = {
     primary: 'bg-primary text-white hover:bg-primary-dark focus-visible:ring-primary',
@@ -25,10 +26,10 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const sizes = {
-    sm: 'px-4 py-1.5 text-xs',
-    md: 'px-5 py-2 text-sm',
-    lg: 'px-8 py-3 text-base', // The "Big" style
-    xl: 'px-10 py-4 text-lg',
+    sm: 'px-3 py-1 text-xs',
+    md: 'px-4 py-1.5 text-sm',
+    lg: 'px-5 py-2 text-sm',
+    xl: 'px-6 py-2.5 text-base',
   };
 
   const widthStyle = isFullWidth ? 'w-full' : '';

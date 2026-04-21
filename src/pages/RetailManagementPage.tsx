@@ -46,15 +46,17 @@ export const RetailManagementPage: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap gap-1 rounded-sm bg-slate-200/70 p-1.5 w-fit" aria-label="Retail management tabs">
+      <div className="flex flex-wrap gap-2 w-fit" aria-label="Retail management tabs">
         {TABS.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
             className={[
-              'rounded-sm px-8 py-3 text-base font-semibold shadow-sm transition',
-              activeTab === tab ? 'bg-primary text-white' : 'bg-transparent text-slate-700 hover:bg-white',
+              'rounded-md border px-4 py-1.5 text-sm font-semibold shadow-sm transition',
+              activeTab === tab
+                ? 'border-primary bg-primary text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
             ].join(' ')}
           >
             {tab}
@@ -128,7 +130,7 @@ export const RetailManagementPage: React.FC = () => {
               <div className="px-1">
                 <button
                   type="button"
-                  className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+                  className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
                 >
                   Generate Report
                 </button>
@@ -145,7 +147,7 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingTaxCodes(!isEditingTaxCodes)}
-              className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
             >
               {isEditingTaxCodes ? 'Save' : 'Edit'}
             </button>
@@ -214,7 +216,7 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingPurchaseEntry(!isEditingPurchaseEntry)}
-              className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
             >
               {isEditingPurchaseEntry ? 'Save' : 'Edit'}
             </button>
@@ -247,7 +249,7 @@ export const RetailManagementPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingLogo(!isEditingLogo)}
-                className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+                className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
               >
                 {isEditingLogo ? 'Save Logo' : 'Edit Logo'}
               </button>
@@ -264,7 +266,7 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingVoucher(!isEditingVoucher)}
-              className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
             >
               {isEditingVoucher ? 'Save' : 'Edit'}
             </button>
@@ -330,7 +332,7 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingValues(!isEditingValues)}
-              className="rounded-sm bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
             >
               {isEditingValues ? 'Save' : 'Edit'}
             </button>
