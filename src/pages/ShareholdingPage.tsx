@@ -292,7 +292,7 @@ export const ShareholdingPage: React.FC = () => {
               type="button"
               onClick={handleSave}
               disabled={!isEditing || saving}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:bg-primary/60"
+              className="rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

@@ -45,7 +45,7 @@ export const EmployeeDropdown: React.FC<EmployeeDropdownProps> = ({
         </label>
       ) : null}
 
-      <div className={label ? 'min-w-0 flex-1 sm:max-w-xs' : 'min-w-0 w-full flex-1 overflow-hidden'}>
+      <div className={label ? 'min-w-0 flex-1 sm:max-w-[220px]' : 'min-w-0 w-full flex-1 overflow-hidden sm:max-w-[260px]'}>
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}

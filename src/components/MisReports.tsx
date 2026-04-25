@@ -44,6 +44,7 @@ export const MisReports: React.FC = () => {
           <Select
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
+            isReadOnly
             options={[
               { value: 'DSA', label: 'DSA' },
               { value: 'Sales', label: 'Sales' },
@@ -55,6 +56,7 @@ export const MisReports: React.FC = () => {
           <Select
             value={dataScope}
             onChange={(e) => setDataScope(e.target.value)}
+            isReadOnly
             options={[
               { value: 'All', label: 'All' },
               { value: 'Active', label: 'Active' },

@@ -146,7 +146,7 @@ export const MAUploadPage: React.FC = () => {
             </div>
             <div className="shrink-0 sm:pb-[2px]">
               <Button
-                variant={isEditing ? 'success' : 'secondary'}
+                variant={isEditing ? 'success' : 'primary'}
                 onClick={() => {
                   if (isEditing) {
                     setIsEditing(false);
@@ -174,7 +174,7 @@ export const MAUploadPage: React.FC = () => {
             </div>
             <div className="shrink-0 sm:pb-[2px]">
               <Button
-                variant={isEditing ? 'success' : 'secondary'}
+                variant={isEditing ? 'success' : 'primary'}
                 onClick={() => {
                   if (isEditing) {
                     setIsEditing(false);

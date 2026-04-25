@@ -85,6 +85,7 @@ export const AdminPersonnelPage: React.FC = () => {
   const [verifierAction, setVerifierAction] = React.useState('Pending');
   const [mediaTabFiles, setMediaTabFiles] = React.useState<Record<string, string>>({});
   const [mediaSectionPreviews, setMediaSectionPreviews] = React.useState<Record<string, string>>({});
+  const [mediaEditing, setMediaEditing] = React.useState(false);
   const [contestEditing, setContestEditing] = React.useState(false);
   const [contestQuestion, setContestQuestion] = React.useState('');
   const [contestAnswers, setContestAnswers] = React.useState<string[]>([
@@ -96,6 +97,7 @@ export const AdminPersonnelPage: React.FC = () => {
   ]);
   const filterInputClass =
     'h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25';
+  const MAX_MEDIA_UPLOAD_KB = 700;
 
   return (
     <section className="flex w-full flex-col gap-4">
@@ -240,7 +242,7 @@ export const AdminPersonnelPage: React.FC = () => {
                 {Array.from({ length: 5 }).map((_, idx) => {
                   const slot = idx + 1;
                   const preview = mediaPreviews[slot];
-                  const fileName = mediaFiles[slot] || 'Click to update (max 500KB)';
+                  const fileName = mediaFiles[slot] || `Click to update (max ${MAX_MEDIA_UPLOAD_KB}KB)`;
                   return (
                     <div key={slot} className="flex flex-col items-center gap-2">
                       <p className="text-lg font-bold text-slate-800">B{slot}</p>
@@ -264,7 +266,7 @@ export const AdminPersonnelPage: React.FC = () => {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            if (file.size > 500 * 1024) return;
+                            if (file.size > MAX_MEDIA_UPLOAD_KB * 1024) return;
                             const objectUrl = URL.createObjectURL(file);
                             setMediaFiles((prev) => ({ ...prev, [slot]: file.name }));
                             setMediaPreviews((prev) => ({ ...prev, [slot]: objectUrl }));
@@ -528,15 +530,25 @@ export const AdminPersonnelPage: React.FC = () => {
 
         {activeTab === 'Media' && (
           <>
-            <h2 className="mb-4 text-4xl font-bold text-primary">Media</h2>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <h2 className="text-4xl font-bold text-primary">Media</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="primary" size="lg" disabled={mediaEditing} onClick={() => setMediaEditing(true)}>
+                  Edit
+                </Button>
+                <Button type="button" variant="success" size="lg" disabled={!mediaEditing} onClick={() => setMediaEditing(false)}>
+                  Save
+                </Button>
+              </div>
+            </div>
             <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-6">
               {[
-                { title: 'Location Centre', count: 3, maxKb: 200 },
-                { title: 'Social Media', count: 4, maxKb: 500 },
-                { title: 'Become a Seller', count: 3, maxKb: 300 },
-                { title: 'Blaunk Certificate', count: 1, maxKb: 300 },
-                { title: 'Refer & Earn', count: 1, maxKb: 150 },
-                { title: 'Contest', count: 1, maxKb: 400 },
+                { title: 'Location Centre', count: 3, maxKb: MAX_MEDIA_UPLOAD_KB },
+                { title: 'Social Media', count: 4, maxKb: MAX_MEDIA_UPLOAD_KB },
+                { title: 'Become a Seller', count: 3, maxKb: MAX_MEDIA_UPLOAD_KB },
+                { title: 'Blaunk Certificate', count: 1, maxKb: MAX_MEDIA_UPLOAD_KB },
+                { title: 'Refer & Earn', count: 1, maxKb: MAX_MEDIA_UPLOAD_KB },
+                { title: 'Contest', count: 1, maxKb: MAX_MEDIA_UPLOAD_KB },
               ].map((group) => (
                 <div key={group.title} className="mb-8 last:mb-0">
                   <h3 className="mb-4 text-xl font-semibold text-slate-800">{group.title}</h3>
@@ -547,7 +559,12 @@ export const AdminPersonnelPage: React.FC = () => {
                       const fileName = mediaTabFiles[slotKey] || `Click to update (max ${group.maxKb}KB)`;
                       return (
                         <div key={slotKey} className="flex flex-col items-center gap-2">
-                          <label className="flex h-40 w-28 cursor-pointer flex-col overflow-hidden border border-rose-300 bg-white">
+                          <label
+                            className={[
+                              'flex h-40 w-28 flex-col overflow-hidden border border-rose-300 bg-white',
+                              mediaEditing ? 'cursor-pointer' : 'pointer-events-none cursor-not-allowed opacity-80',
+                            ].join(' ')}
+                          >
                             <div className="border-b border-rose-300 bg-[#ececab] px-2 py-1 text-center text-[11px] font-semibold text-slate-700">
                               Image
                             </div>
@@ -564,6 +581,7 @@ export const AdminPersonnelPage: React.FC = () => {
                               type="file"
                               accept="image/*"
                               className="hidden"
+                              disabled={!mediaEditing}
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
@@ -639,7 +657,10 @@ export const AdminPersonnelPage: React.FC = () => {
             </section>
 
             <div className="mt-4">
-              <Button onClick={() => setContestEditing((prev) => !prev)}>
+              <Button
+                variant={contestEditing ? 'success' : 'primary'}
+                onClick={() => setContestEditing((prev) => !prev)}
+              >
                 {contestEditing ? 'Save' : 'Edit'}
               </Button>
             </div>

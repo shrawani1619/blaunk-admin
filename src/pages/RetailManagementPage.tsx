@@ -147,7 +147,10 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingTaxCodes(!isEditingTaxCodes)}
-              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className={[
+                'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
+                isEditingTaxCodes ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+              ].join(' ')}
             >
               {isEditingTaxCodes ? 'Save' : 'Edit'}
             </button>
@@ -216,7 +219,10 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingPurchaseEntry(!isEditingPurchaseEntry)}
-              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className={[
+                'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
+                isEditingPurchaseEntry ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+              ].join(' ')}
             >
               {isEditingPurchaseEntry ? 'Save' : 'Edit'}
             </button>
@@ -249,7 +255,10 @@ export const RetailManagementPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingLogo(!isEditingLogo)}
-                className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+                className={[
+                  'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
+                  isEditingLogo ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+                ].join(' ')}
               >
                 {isEditingLogo ? 'Save Logo' : 'Edit Logo'}
               </button>
@@ -266,7 +275,10 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingVoucher(!isEditingVoucher)}
-              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className={[
+                'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
+                isEditingVoucher ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+              ].join(' ')}
             >
               {isEditingVoucher ? 'Save' : 'Edit'}
             </button>
@@ -332,7 +344,10 @@ export const RetailManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditingValues(!isEditingValues)}
-              className="rounded-sm bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+              className={[
+                'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition',
+                isEditingValues ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+              ].join(' ')}
             >
               {isEditingValues ? 'Save' : 'Edit'}
             </button>

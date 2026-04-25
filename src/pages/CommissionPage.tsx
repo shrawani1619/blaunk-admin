@@ -59,12 +59,12 @@ function Stepper({
 
 export const CommissionPage: React.FC = () => {
   const [portalFees, setPortalFees] = React.useState<PortalFeesState>(initialPortalFees);
-  const [portalEditing, setPortalEditing] = React.useState(true);
+  const [portalEditing, setPortalEditing] = React.useState(false);
   const [bgtRows, setBgtRows] = React.useState<Record<BgtRowKey, BgtRow>>({
     BGT: { buyer: 1.0, seller: 1.5 },
     GST: { buyer: 1.0, seller: 0.0 },
   });
-  const [bgtEditing, setBgtEditing] = React.useState(true);
+  const [bgtEditing, setBgtEditing] = React.useState(false);
 
   const inputClass =
     'h-10 w-full min-w-[8rem] rounded-md border border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-70';
@@ -78,9 +78,14 @@ export const CommissionPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setPortalEditing((e) => !e)}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className={[
+              'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2',
+              portalEditing
+                ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-300'
+                : 'bg-primary hover:bg-primary-dark focus-visible:ring-primary/40',
+            ].join(' ')}
           >
-            Edit
+            {portalEditing ? 'Save' : 'Edit'}
           </button>
         </div>
 
@@ -131,9 +136,14 @@ export const CommissionPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setBgtEditing((e) => !e)}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className={[
+              'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2',
+              bgtEditing
+                ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-300'
+                : 'bg-primary hover:bg-primary-dark focus-visible:ring-primary/40',
+            ].join(' ')}
           >
-            Edit
+            {bgtEditing ? 'Save' : 'Edit'}
           </button>
         </div>
 

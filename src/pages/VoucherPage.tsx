@@ -87,7 +87,10 @@ export const VoucherPage: React.FC = () => {
           type="button"
           onClick={handlePrimaryAction}
           aria-label={isEditing ? 'Save voucher data' : 'Edit voucher data'}
-          className="rounded-md bg-white px-4 py-1.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          className={[
+            'rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+            isEditing ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary-dark',
+          ].join(' ')}
         >
           {isEditing ? 'Save' : 'Edit'}
         </button>
